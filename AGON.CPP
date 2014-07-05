@@ -387,6 +387,7 @@ again:		cout<<"enter r and c to \"move to\""<<endl;
 	 }while(ch=='y'||ch=='Y'||ch=='s'||ch=='S');
 
 	getch();
+
 	cout<<"MUKESH"<<endl;
 
 }
@@ -672,6 +673,7 @@ nw_gm:		clrscr();
 	}
 
 	return(-1);
+
 }
 
 
@@ -682,8 +684,12 @@ nw_gm:		clrscr();
 void game_choose()
 {
 	int fr;
-	char ch12,sav,cho12;
+	char ch1,ch12='y',ch123,sav,cho12;
+
 gm:	cho=0;
+
+	if(ch12!='y')
+		cho=50;
 
 	closegraph();
 
@@ -704,14 +710,33 @@ gm:	cho=0;
 
 	if(cho==49)
 	{
-nw_gm:
-		cout<<"\n\n\n\n\n\n\n\n\n\n\n\t\t\t";
-		cout<<"     NEW GAME STARTED";
 
-		nw_gme.copy_4m();
-		new_gm=1;
-		count=-1;
-		ch='y';
+		cout<<"do u wanna exit this game and start a new one"<<endl;
+		cin>>ch1;
+
+		if(ch1=='y')
+		{
+			cout<<"do u wanna save the currnet game ??"<<endl;
+			cin>>ch123;
+			if(ch123=='y')
+				file_save();
+			else
+				cout<<"the current game is not saved"<<endl;
+
+nw_gm:                 	clrscr();
+
+			cout<<"\n\n\n\n\n\n\n\n\n\n\n\t\t\t";
+			cout<<"    \"NEW GAME STARTED\"";
+
+			nw_gme.copy_4m();
+			new_gm=1;
+			count=-1;
+			ch='y';
+
+			getch();
+		}
+		else
+			goto gm;
 	}
 	else if(cho==50)
 	{
@@ -791,6 +816,11 @@ nw_gm:
 		cin>>sav;
 		if(sav=='y')
 			file_save();
+
+		getch();
+		credits();
+		getch();
+
 		exit(0);
 
 	}
@@ -805,6 +835,7 @@ nw_gm:
 		fillellipse(450,65,5,5);
 		fillellipse(430,145,5,5);
 	}
+
 }
 
 /*********************************************************************
@@ -902,7 +933,9 @@ void file_save()
 		file.close();
 	}
 	getch();
+
 	return;
+
 }
 
 /*********************************************************************
@@ -931,7 +964,9 @@ int file_read()
 	cout<<"data retreaved successfully"<<endl;
 	file.close();
 	getch();
+
 	return(1);
+
 }
 
 /*********************************************************************
@@ -1164,6 +1199,7 @@ int moves()
 		}
 
 	return(0);
+
 }
 
 /*********************************************************************
@@ -1328,6 +1364,7 @@ agn:		lst=lstrw();
 		return(1);
 
 	return(0);
+
 }
 
 /*********************************************************************
@@ -1564,6 +1601,7 @@ int capchk()
 	}
 
 	return(0);
+
 }
 
 /*********************************************************************
@@ -1602,6 +1640,7 @@ int lstrw()
 	}
 
 	return(0);
+
 }
 
 /*********************************************************************
@@ -1636,6 +1675,7 @@ int winchk(int ply)
 
 void credits()
 {
+
 	cout<<"\t\t\t     \"THANKS FOR PLAYING\""<<endl
 	    <<"\n\t\t\t\t    \"AGON\"\n"<<endl
 	    <<"\t\t\t\ta C++ Project"<<endl
@@ -1657,9 +1697,8 @@ void credits()
 	    <<"\t\tfor helping us in making this project"<<endl
 	    <<"\t\t\t\ta succesful one"<<endl
 	    <<"\t\t\t\t thank you ALL"<<endl;
+
 }
-
-
 /* we thank our computer teacher for being a spectacular support and guide
 throughout the period of our project making. He has been motivating and inspirin
 us. Also, he has given great opportunities to explore and instill programming
