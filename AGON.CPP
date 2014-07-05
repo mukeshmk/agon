@@ -85,7 +85,7 @@ class save
 
 save::save()
 {
-	int i,j,k=5;
+	int i,j,k=5,p,q;
 
 	strcpy(nm[0],"Player 1");
 	strcpy(nm[1],"Player 2");
@@ -116,11 +116,13 @@ save::save()
 	for(i=0;i<5;i++)
 		for(j=6;j<11-i;j++)
 			pos[i][j]=-1;
-	for(i=10;i>=6;i--)
+	for(p=10;p>5;p--)
 	{
-		for(j=6;j<=i;j++)
-			pos[i][j]=-1;
+		for(q=10;q>k;q++)
+			pos[p][q]=-1;
+		k++;
 	}
+
 }
 
 /*********************************************************************
@@ -1159,8 +1161,20 @@ void credits()
 	    <<"\t\t\tP.Pravin Kumar"<<endl
 	    <<"\t\t\tR.Madhumitha"<<endl
 	    <<"\t\t\tV.Prabha"<<endl
-	    <<"\n\nOur Sincere thanks to your Computer Teacher"<<endl
-	    <<"\t\t\t\"Mr.Kamal Kishore Sharma\" sir"<<endl
-	    <<"for helping us in making this game a succesful one"<<endl
+	    <<"\n\n\tOur Sincere thanks to your Computer Teacher"<<endl
+	    <<"\t\t\t\"Mr.Kamal Kishore Sharma\""<<endl
+	    <<"\tfor being a spectacular support and guide"<<endl
+	    <<"\tthroughout the period of our project making."<<endl
+	    <<"\tHe has been motivating and inspiring us."<<endl
+	    <<"\tAlso, he has given great opportunities to explore"<<endl
+	    <<"\tand instill programming skills."<<endl
+	    <<"\tfor helping us in making this game a succesful one"<<endl
 	    <<"\t\t\t thank you sir"<<endl;
 }
+
+
+
+/* we thank our computer teacher for being a spectacular support and guide
+throughout the period of our project making. He has been motivating and inspirin
+us. Also, he has given great opportunities to explore and instill programming
+skills. */
