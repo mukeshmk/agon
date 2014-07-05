@@ -9,42 +9,33 @@
 #include<string.h>
 #include<stdio.h>
 #include<conio.h>
-#include<bios.h>
 #include<dos.h>
-
-/*********************************************************************
-			PRE-PROCESSOR DIRECTIVES
-*********************************************************************/
-
-#define Right_Arrow 19712
-#define Down_Arrow 20480
-#define Left_Arrow 19200
-#define Up_Arrow 18432
-#define Enter 7181
-#define F1 15104
-#define ESC 283
 
 /*********************************************************************
 			FUNCTIONS USED
 *********************************************************************/
 
-void loadin();			//FUNCTION TO DISPALY LOADING
-void rules();			//FUNCTION TO DISPLAY RULES OF THE GAME
 void dice();                    //FUNCTION FOR ROLLING THE DICE
-void hexagon(int,int);          //FUNCTION TO CHANGE THE COORDINATES
 void draw();		        //FUNCTION TO DRAW THE HEXAGON
+void rules();			//FUNCTION TO DISPLAY RULES OF THE GAME
+void loadin();			//FUNCTION TO DISPALY LOADING
 void colour();			//FUNCTION TO CHOOSE COLOUR FOR COINS
-void position(int*,int*);       //FUNCTION TO PRINT THE POSITIONS
-int winchk(int);                //FUNCTION TO CHECK FOR WIN
-int capchk();                   //FUNCTION TO CHECK FOR CAPTURE
+void credits();			//FUNCTION TO DISPLAY CREDITS
+void file_del();		//FUNCTION TO DELETE FILE
+void file_list();		//FUNCTION TO SHOW SAVE FILES
+void file_save();               //FUNCTION TO SAVE THE GAME
 void modi(int);                 //FUNCTION FOR POSTION MODIFICATION
-int poschag(int);               //FUNCTION FOR POISTION CHANGING
+void hexagon(int,int);          //FUNCTION TO CHANGE THE COORDINATES
+void position(int*,int*);       //FUNCTION TO PRINT THE POSITIONS
+
 int moves();			//FUNCTION TO CHECK FOR CORRECT MOVES
 int lstrw();			//FUNCTION MOVE TO LAST ROW
-int game_choose();              //FUNCTION TO CHOOSE THE GAME
-void file_save();               //FUNCTION TO SAVE THE GAME
+int capchk();                   //FUNCTION TO CHECK FOR CAPTURE
+int game_cho();                 //FUNCTION TO CHOOSE THE GAME IN START
 int file_read();		//FUNCTION TO READ THE SAVE FILE
-void credits();			//FUNCTION TO DISPLAY CREDITS
+int game_choose();              //FUNCTION TO CHOOSE THE GAME
+int winchk(int);                //FUNCTION TO CHECK FOR WIN
+int poschag(int);               //FUNCTION FOR POISTION CHANGING
 
 void graphics_screen()		//FUNCTION TO INITALISE GRA[HICS
 {
@@ -57,9 +48,9 @@ void graphics_screen()		//FUNCTION TO INITALISE GRA[HICS
 *********************************************************************/
 
 const int plyr[2]={1,2};
-char nm[2][30];
+char nm[2][30],fl_nm[30],ch;
 int poly[14],rw1,cl1,rw2,cl2,ply=1,count=0;
-int clr1=4,clr2=2,flag,cho,key,cursor;
+int clr1=4,clr2=2,flag,cho;
 fstream file;
 int p1rw[7]={0,0,4,4,8,9,10},p1cl[7]={0,4,0,9,7,0,3};
 int p2rw[7]={0,1,2,6,6,10,10},p2cl[7]={2,6,0,0,9,1,5};
@@ -94,6 +85,7 @@ class save
 	int p2rw[7],p2cl[7];
 	int pos[11][11];
    public:
+	char fl_nm[30];
 	save();
 	void copy_to();
 	void copy_4m();
@@ -107,6 +99,7 @@ save::save()
 {
 	int i,j,k=5,p,q;
 
+	strcpy(fl_nm,"save1.dat");
 	strcpy(nm[0],"Player 1");
 	strcpy(nm[1],"Player 2");
 	count=0;
@@ -134,15 +127,15 @@ save::save()
 	pos[0][4]=pos[4][0]=pos[4][9]=pos[8][7]=pos[9][0]=pos[10][3]=1;
 	pos[0][2]=pos[1][6]=pos[2][0]=pos[6][0]=pos[6][9]=pos[10][1]=2;
 	for(i=0;i<5;i++)
-		for(j=6;j<11-i;j++)
+		for(j=6+i;j<11;j++)
 			pos[i][j]=-1;
-	for(p=10;p>5;p--)
+	for(j=10;j>5;j--)
 	{
-		for(q=10;q<k;q++)
+		for(i=10;i>k;i--)
 			pos[p][q]=-1;
+		cout<<endl;
 		k++;
 	}
-
 }
 
 /*********************************************************************
@@ -152,7 +145,7 @@ save::save()
 void save::copy_to()
 {
 	int i,j;
-
+	strcpy(fl_nm,::fl_nm);
 	strcpy(nm[0],::nm[0]);
 	strcpy(nm[1],::nm[1]);
 	count=::count;
@@ -180,7 +173,7 @@ void save::copy_to()
 void save::copy_4m()
 {
 	int i,j;
-
+	strcpy(::fl_nm,fl_nm);
 	strcpy(::nm[0],nm[0]);
 	strcpy(::nm[1],nm[1]);
 	::count=count;
@@ -214,21 +207,21 @@ void main()
 	count=::count;
 
 //	loadin();			//calling of loadin
-	gm_ch=game_choose();		//calling of game choose
+	gm_ch=game_cho();		//calling of game choose
 	if(gm_ch==1)
 		goto cont;
 	else if(gm_ch==-1)
 	{
-//		credits();
+		credits();
 		getch();
 		exit(0);
 	}
 
-/*	rules();			//calling of rules function
+	rules();			//calling of rules function
 	clrscr();
 	dice();         		//calling of dice function
 	colour();			//calling of colour function
-*/
+
 cont:	//Graphics initialisation
 	graphics_screen();
 
@@ -249,7 +242,6 @@ cont:	//Graphics initialisation
 	draw();			//calling of draw function
 	modi(1);		//calling of modi function
 
-	char ch;
 	do
 	{
 		gotoxy(1,1);
@@ -345,7 +337,8 @@ again:		cout<<"enter r and c to \"move to\""<<endl;
 		}
 		else if(ch!='y'&&ch!='Y')
 		{
-			cout<<"do u want to save be4 exiting ??"<<endl;
+			game_choose();
+/*			cout<<"do u want to save be4 exiting ??"<<endl;
 			cin>>sav;
 			if(sav=='y')
 				file_save();
@@ -353,7 +346,7 @@ again:		cout<<"enter r and c to \"move to\""<<endl;
 			closegraph();
 			credits();
 			getch();
-			exit(0);
+*/ //			exit(0);
 		}
 		count++;
 	 }while(ch=='y'||ch=='Y'||ch=='s'||ch=='S');
@@ -526,25 +519,261 @@ enter:		gotoxy(1,5);
 }
 
 /*********************************************************************
+		  FUNCTION TO CHOOSE THE GAME IN START
+*********************************************************************/
+
+int game_cho()
+{
+	int fr;
+	char ch;
+gm:	cho=0;
+	cout<<"Do you you want to :-"<<endl
+	    <<"1.Play the new game"<<endl
+	    <<"2.Play the saved game "<<endl
+	    <<"3.Any other key to exit"<<endl
+	    <<"enter ur choice:";
+	cin>>cho;
+	if(cho==1)
+	{
+nw_gm:		clrscr();
+		cout<<"\n\n\n\n\n\n\n\n\n\n\n\t\t\t";
+		cout<<"NEW GAME STARTED";
+		return(0);
+	}
+	else if(cho==2)
+	{
+		fr=file_read();
+		if(fr==0)
+			goto nw_gm;
+		else
+			return(1);
+	}
+	else
+	{
+		cout<<"are u sure u wanna exit this amazing game??"<<endl;
+		cin>>ch;
+		if(ch!='y')
+		{
+			clrscr();
+			goto gm;
+		}
+	}
+	return(-1);
+}
+
+
+/*********************************************************************
+			FUNCTION TO CHOOSE THE GAME
+*********************************************************************/
+
+int game_choose()
+{
+	int fr;
+	char ch12,sav;
+gm:	cho=0;
+	cout<<"Do you you want to :-"<<endl
+	    <<"1.Play the new game"<<endl
+	    <<"2.Continue current game"<<endl
+	    <<"3.Save the current game"<<endl
+	    <<"3.See the saved games"<<endl
+	    <<"4.Play the saved game "<<endl
+	    <<"5.Delete a exirsting file"<<endl
+	    <<"6.Read the instructions"<<endl
+	    <<"7.Choose ur coin colour"<<endl
+	    <<"8.Any other key to exit"<<endl
+	    <<"enter ur choice:";
+	cin>>cho;
+	if(cho==1)
+	{
+nw_gm:		closegraph();
+		cout<<"\n\n\n\n\n\n\n\n\n\n\n\t\t\t";
+		cout<<"NEW GAME STARTED";
+		save c;
+		c.copy_4m();
+		graphics_screen();
+		draw();			//calling of draw function
+		modi(1);		//calling of modi function
+		count=-1;
+		ch='y';
+		return(0);
+	}
+	else if(cho==2)
+	{
+		ch='y';
+		return(0);
+	}
+	else if(cho==3)
+	{
+		file_list();
+		getch();
+		ch='y';
+		return(0);
+	}
+	else if(cho==4)
+	{
+		fr=file_read();
+		if(fr==0)
+			goto nw_gm;
+		else
+		{
+			closegraph();
+			graphics_screen();
+			draw();			//calling of draw function
+			modi(1);		//calling of modi function
+			count--;
+			ch='y';
+			return(1);
+		}
+
+	}
+	else if(cho==5)
+	{
+		closegraph();
+		file_del();
+		getch();
+		clrscr();
+		graphics_screen();
+		draw();			//calling of draw function
+		modi(1);		//calling of modi function
+		ch='y';
+		goto gm;
+	}
+	else if(cho==6)
+	{
+		closegraph();
+		rules();
+		graphics_screen();
+		draw();			//calling of draw function
+		modi(1);		//calling of modi function
+		ch='y';
+		return(0);
+	}
+	else if(cho==7)
+	{
+		closegraph();
+		colour();
+		graphics_screen();
+		draw();			//calling of draw function
+		modi(1);		//calling of modi function
+		ch='y';
+		return(0);
+	}
+	else
+	{
+		cout<<"are u sure u wanna exit this amazing game??"<<endl;
+		cin>>ch12;
+		if(ch12!='y')
+		{
+			closegraph();
+			colour();
+			graphics_screen();
+			draw();			//calling of draw function
+			modi(1);		//calling of modi function
+			ch='y';
+			return(0);
+		}
+		cout<<"do u want to save be4 exiting ??"<<endl;
+		cin>>sav;
+		if(sav=='y')
+			file_save();
+
+	}
+	return(-1);
+}
+
+/*********************************************************************
+			FUNCTION TO SHOW SAVE FILES
+*********************************************************************/
+
+void file_list()
+{
+	char file_nm[30];
+	file.open("txtfl_MK.txt",ios::in|ios::out);
+	if(!file)
+	{
+		cout<<"No Saved files found"<<endl
+		    <<"Press any key to continue"<<endl;
+		getch();
+		return;
+	}
+	cout<<"the existing save files are:"<<endl;
+	while(!file.eof())
+	{
+		file.getline(file_nm,30,'\n');
+		cout<<file_nm<<endl;
+	}
+	file.close();
+}
+
+/*********************************************************************
 			FUNCTION TO SAVE THE GAME
 *********************************************************************/
 
 void file_save()
 {
+	char names[30],ch;
+	int f_flag=0,rep=0;
+
+	file_list();
+
+	cout<<"enter file name to save as"<<endl;
+	gets(fl_nm);
+
+	strcpy(names,fl_nm);
+	strcat(fl_nm,".dat");
+
+	ofstream tochk(fl_nm,ios::nocreate);
+	if(tochk)
+	{
+		cout<<"file already exists"<<endl
+		    <<"do u want to replace old file"<<endl;
+		cin>>ch;
+		if(ch=='y')
+		{
+			f_flag=1;
+			rep=1;
+		}
+	}
+	else
+		f_flag=1;
+	tochk.close();
+
+	if(!f_flag)
+		return;
+
 	count++;
 	s.copy_to();
 	count--;
-	file.open("mk1.dat",ios::out|ios::binary);
+
+	file.open(fl_nm,ios::out|ios::binary);
 	if(!file)
 	{
-		cout<<"file not opened"<<endl;
+		cout<<"file not opened save"<<endl;
 		flag=0;
 		getch();
 		return;
 	}
 	file.write((char*)&s,sizeof(s));
-	cout<<"save successful"<<endl;
 	file.close();
+
+	if(!rep)
+	{
+
+		file.open("txtfl_MK.txt",ios::app);
+		if(!file)
+		{
+			cout<<"text file not opened"<<endl;
+			getch();
+			return;
+		}
+		if(file)
+		{
+			file<<names<<"\n";
+			cout<<"save successful"<<endl;
+		}
+		file.close();
+	}
+	getch();
 	return;
 }
 
@@ -554,11 +783,18 @@ void file_save()
 
 int file_read()
 {
-	file.open("mk1.dat",ios::in|ios::binary);
+
+	file_list();
+
+	cout<<"enter file name to read from"<<endl;
+	gets(fl_nm);
+
+	strcat(fl_nm,".dat");
+
+	file.open(fl_nm,ios::in|ios::binary);
 	if(!file)
 	{
-		cout<<"file not opened"<<endl;
-		flag=0;
+		cout<<"file does not exist read"<<endl;
 		getch();
 		return(0);
 	}
@@ -566,40 +802,63 @@ int file_read()
 	s.copy_4m();
 	cout<<"data retreaved successfully"<<endl;
 	file.close();
+	getch();
 	return(1);
 }
 
 /*********************************************************************
-			FUNCTION TO CHOOSE THE GAME
+			FUNCTION TO DELETE A FILE
 *********************************************************************/
 
-int game_choose()
+void file_del()
 {
-	int fr;
-	cho=0;
-	cout<<"Do you you want to \n"
-	    <<"1.Play the saved game  OR\n"
-	    <<"2.Play the new game\n"
-	    <<"3.Any other key to exit\n"
-	    <<"enter ur choice:";
-	cin>>cho;
-	if(cho==1)
+	char name[30],buff[30];
+	file_list();
+	cout<<"enter the file name which u wanna delete"<<endl;
+	gets(name);
+
+	strcpy(fl_nm,name);
+	strcat(name,".dat");
+
+	file.open(name,ios::in);
+	if(!file)
 	{
-		fr=file_read();
-		if(fr==0)
-			goto nw_gm;
-		else
-			return(1);
+		cout<<"file does not exist delete"<<endl;
+		getch();
+		return;
 	}
-	else if(cho==2)
+	file.close();
+
+	ofstream temp("temp.txt",ios::out);
+	if(!temp)
 	{
-nw_gm:		clrscr();
-		cout<<"\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t";
-		cout<<"NEW GAME STARTED";
-		return(0);
+		cout<<"temp file does not exist"<<endl;
+		getch();
+		return;
 	}
-	else
-		return(-1);
+	file.open("txtfl_MK.txt",ios::in);
+	if(!file)
+	{
+		cout<<"text file not opened"<<endl;
+		getch();
+		return;
+	}
+	while(!file.eof())
+	{
+		file.getline(buff,20,'\n');
+		if(strcmp(buff,fl_nm)!=0)
+			temp<<buff<<"\n";
+	}
+
+	remove(name);
+
+	file.close();
+	temp.close();
+	remove("txtfl_MK.txt");
+	rename("temp.txt","txtfl_MK.txt");
+
+	cout<<"delete succesful"<<endl;
+	getch();
 }
 
 /*********************************************************************
@@ -1233,7 +1492,7 @@ int winchk(int ply)
 
 void credits()
 {
-	cout<<"\n\n\t\t\t     \"THANKS FOR PLAYING\""<<endl
+	cout<<"\t\t\t     \"THANKS FOR PLAYING\""<<endl
 	    <<"\n\t\t\t\t    \"AGON\"\n"<<endl
 	    <<"\t\t\t\ta C++ Project"<<endl
 	    <<"\t\t\tDone by:-"<<endl
@@ -1246,12 +1505,14 @@ void credits()
 	    <<"\n\n\t\tOur Sincere thanks to your Computer Teacher"<<endl
 	    <<"\t\t\t   \"Mr.Kamal Kishore Sharma\""<<endl
 	    <<"\t\tfor being a spectacular support and guide"<<endl
-	    <<"\t\tthroughout the period of our project making."<<endl
+	    <<"\t\tthroughout the period of our project."<<endl
 	    <<"\t\tHe has been motivating and inspiring us."<<endl
 	    <<"\t\tAlso, he has given great opportunities to explore"<<endl
 	    <<"\t\tand instill programming skills."<<endl
-	    <<"\t\tfor helping us in making this game a succesful one"<<endl
-	    <<"\t\t\t\t thank you sir"<<endl;
+	    <<"\tI also thank my friends R.Ashwin and Shagesh"<<endl
+	    <<"\tfor helping me in making my project, thanks guys"<<endl
+	    <<"\t\tFor helping us in making this game a succesful one"<<endl
+	    <<"\t\t\t\t thank you ALL"<<endl;
 }
 
 
