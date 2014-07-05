@@ -85,7 +85,7 @@ class save
 
 save::save()
 {
-	int i,j;
+	int i,j,k=5;
 
 	strcpy(nm[0],"Player 1");
 	strcpy(nm[1],"Player 2");
@@ -117,9 +117,11 @@ save::save()
 		for(j=6;j<11-i;j++)
 			pos[i][j]=-1;
 	for(i=10;i>=6;i--)
+	{
 		for(j=6;j<=i;j++)
 			pos[i][j]=-1;
 	}
+}
 
 /*********************************************************************
 			CLASS FUNTION COPY_TO
@@ -300,7 +302,7 @@ again:		cout<<"enter r and c to \"move to\""<<endl;
 		{
 			closegraph();
 			credits();
-			delay(2000);
+			getch();
 			exit(0);
 		}
 		count++;
@@ -1147,5 +1149,18 @@ int lstrw()
 
 void credits()
 {
-	cout<<"\n\nthanks for playing"<<endl;
+	cout<<"\n\n\t\t\t     \"THANKS FOR PLAYING\""<<endl
+	    <<"\n\n\t\t\t\t    \"AGON\""<<endl
+	    <<"\t\t\t\t  C++ Project"<<endl
+	    <<"\t\tDone by:-"<<endl
+	    <<"\t\t   (Lead Programer)"<<endl
+	    <<"\t\t\tA.Mukesh"<<endl
+	    <<"\t\t   (Programers)"<<endl
+	    <<"\t\t\tP.Pravin Kumar"<<endl
+	    <<"\t\t\tR.Madhumitha"<<endl
+	    <<"\t\t\tV.Prabha"<<endl
+	    <<"\n\nOur Sincere thanks to your Computer Teacher"<<endl
+	    <<"\t\t\t\"Mr.Kamal Kishore Sharma\" sir"<<endl
+	    <<"for helping us in making this game a succesful one"<<endl
+	    <<"\t\t\t thank you sir"<<endl;
 }
