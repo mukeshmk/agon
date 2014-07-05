@@ -17,7 +17,8 @@
 void rules();			//FUNCTION TO DISPLAY RULES OF THE GAME
 void dice();                    //FUNCTION FOR ROLLING THE DICE
 void hexagon(int,int);          //FUNCTION TO CHANGE THE COORDINATES
-void draw();                    //FUNCTION TO DRAW THE HEXAGON
+void draw();		        //FUNCTION TO DRAW THE HEXAGON
+void colour();			//FUNCTION TO CHOOSE COLOUR FOR COINS
 void position(int*,int*);       //FUNCTION TO PRINT THE POSITIONS
 int winchk(int);                //FUNCTION TO CHECK FOR WIN
 int capchk();                   //FUNCTION TO CHECK FOR CAPTURE
@@ -33,6 +34,7 @@ int lstrw();			//FUNCTION MOVE TO LAST ROW
 const int plyr[2]={1,2};
 char nm[2][30];
 int poly[14],rw1,cl1,rw2,cl2,ply=1;
+int clr1=4,clr2=2,cor_x,cor_y,ctr_x,ctr_y;
 
 		//Red   Player:-1 Green Player:-2
 int p1rw[7]={0,0,4,4,8,9,10},p1cl[7]={0,4,0,9,7,0,3};
@@ -69,6 +71,7 @@ void main()
 	rules();			//calling of rules function
 	clrscr();
 	dice();         		//calling of dice function
+	colour();			//calling of colour function
 
 	//Graphics initialisation
 	int gd=DETECT,gm;
@@ -165,6 +168,13 @@ again:		cout<<"enter r and c to \"move to\""<<endl;
 
 		cout<<"do u want to continue"<<endl;
 		cin>>ch;
+		if(ch!='y'||ch!='Y')
+		{
+			closegraph();
+			cout<<"\n\nthanks for playing"<<endl;
+			delay(2000);
+			exit(0);
+		}
 
 		count++;
 	 }while(ch=='y'||ch=='Y');
@@ -236,8 +246,7 @@ roll:	for(i=0;i<2;++i)
 	else
 		cout<<endl<<nm[1]<<" wins the \"first chance\""<<endl;
 
-	cout<<endl<<"You are the \"first Player\""<<endl
-	    <<"your conis are the \"red\" once"<<endl;
+	cout<<endl<<"You are the \"first Player\""<<endl;
 	getch();
 }
 
@@ -298,6 +307,70 @@ void hexagon (int x, int y)
 	poly[11]=y+10;
 	poly[12]=x+10;
 	poly[13]=y;
+}
+
+/*********************************************************************
+		FUNCTION TO CHOOSE COLOUR FOR COINS
+*********************************************************************/
+void colour()
+{
+	int i=0;
+	char cho;
+	char ch[12][3]={"1","2","3","4","5","6","7"
+			,"8","9","10","11","12"};
+	clrscr();
+
+	cout<<"Do you want to choose colours for your coins"<<endl
+	    <<"by Default"<<endl
+	    <<"Player 1 gets \"RED\" coins"<<endl
+	    <<"Player 2 gets \"GREEN\" coins"<<endl
+	    <<"do you want to change ?? (y\\n)"<<endl;
+	cin>>cho;
+	if(cho=='y')
+	{
+		int gd=DETECT,gm;
+		initgraph(&gd,&gm,"c:\\turboc3\\bgi");
+
+		cout<<"\t\t Enter the colours you want for your coins"<<endl;
+		for(i=0;i<6;i++)
+		{
+			outtextxy(88+80*i,185,ch[i]);
+			outtextxy(88+80*i,285,ch[i+6]);
+		}
+		for(i=0;i<6;i++)
+		{
+			setcolor(i+1);
+			setfillstyle(1,i+1);
+			fillellipse(90+i*80,160,20,20);
+		}
+		for(i=8;i<14;i++)
+		{
+			setcolor(i+1);
+			setfillstyle(1,i+1);
+			fillellipse(90+(i-8)*80,260,20,20);
+		}
+enter:		gotoxy(1,5);
+		cout<<nm[0]<<"-choose the colour :";
+		cin>>clr1;
+		cout<<nm[1]<<"-choose the colour :";
+		cin>>clr2;
+
+		if((clr1==clr2)||(clr1>13||clr2>13))
+		{
+			gotoxy(1,5);
+			for(i=0;i<4;i++)
+				cout<<"\t\t\t\t\t\t\t\t"<<endl;
+			gotoxy(1,4);
+			cout<<"enter again as chooses are wrong or same"<<endl;
+			goto enter;
+		}
+		if(clr1>6)
+			clr1+=2;
+		if(clr2>6)
+			clr2+=2;
+
+		closegraph();
+	}
 }
 
 /*********************************************************************
@@ -424,13 +497,13 @@ void modi(int z)
 		for(int k=0;k<7;++k)
 			if(plyr[j]==1)
 			{
-				setfillstyle(1,4);
+				setfillstyle(1,clr1);
 				prw[k]=p1rw[k];
 				pcl[k]=p1cl[k];
 			}
 			else
 			{
-				setfillstyle(1,2);
+				setfillstyle(1,clr2);
 				prw[k]=p2rw[k];
 				pcl[k]=p2cl[k];
 			}
@@ -540,9 +613,9 @@ agn:		lst=lstrw();
 //To make the new circle
 		setcolor(15);
 		if(ply==1)
-			setfillstyle(1,4);
+			setfillstyle(1,clr1);
 		else
-			setfillstyle(1,2);
+			setfillstyle(1,clr2);
 		if(rw2<=5)
 		{
 			X=x+10*(2*cl2+1)-10*rw2;
