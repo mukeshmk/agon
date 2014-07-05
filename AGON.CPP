@@ -19,39 +19,38 @@ void dice();                    //FUNCTION FOR ROLLING THE DICE
 void draw();		        //FUNCTION TO DRAW THE HEXAGON
 void rules();			//FUNCTION TO DISPLAY RULES OF THE GAME
 void loadin();			//FUNCTION TO DISPALY LOADING
-void colour();			//FUNCTION TO CHOOSE COLOUR FOR COINS
 void credits();			//FUNCTION TO DISPLAY CREDITS
 void file_del();		//FUNCTION TO DELETE FILE
 void file_list();		//FUNCTION TO SHOW SAVE FILES
 void file_save();               //FUNCTION TO SAVE THE GAME
+void clr_match();		//FUNCTION TO CHECK FOR SAME CLR
+void game_choose();             //FUNCTION TO CHOOSE THE GAME
 void modi(int);                 //FUNCTION FOR POSTION MODIFICATION
+void clr_chs(int);		//FUNCTION TO CHOOSE COLOUR FOR COINS
 void hexagon(int,int);          //FUNCTION TO CHANGE THE COORDINATES
 void position(int*,int*);       //FUNCTION TO PRINT THE POSITIONS
+
+void graphics_screen();		//FUNCTION TO INITALISE GRA[HICS
 
 int moves();			//FUNCTION TO CHECK FOR CORRECT MOVES
 int lstrw();			//FUNCTION MOVE TO LAST ROW
 int capchk();                   //FUNCTION TO CHECK FOR CAPTURE
 int game_cho();                 //FUNCTION TO CHOOSE THE GAME IN START
 int file_read();		//FUNCTION TO READ THE SAVE FILE
-int game_choose();              //FUNCTION TO CHOOSE THE GAME
 int winchk(int);                //FUNCTION TO CHECK FOR WIN
 int poschag(int);               //FUNCTION FOR POISTION CHANGING
-
-void graphics_screen()		//FUNCTION TO INITALISE GRA[HICS
-{
-	int gd=DETECT,gm;
-	initgraph(&gd,&gm,"c:\\turboc3\\bgi");
-}
 
 /*********************************************************************
 			GLOBAL VARIABLES
 *********************************************************************/
 
 const int plyr[2]={1,2};
-char nm[2][30],fl_nm[30],ch;
-int poly[14],rw1,cl1,rw2,cl2,ply=1,count=0;
-int clr1=4,clr2=2,flag,cho;
+char nm[2][30],fl_nm[30],grp[50]="c:\\turboc3\\bgi",ch;
+int poly[14],rw1,cl1,rw2,cl2,ply=1,flag,cho,new_gm=0;
+int clr1=4,clr2=2,bkclr=8,count=0;
+
 fstream file;
+
 int p1rw[7]={0,0,4,4,8,9,10},p1cl[7]={0,4,0,9,7,0,3};
 int p2rw[7]={0,1,2,6,6,10,10},p2cl[7]={2,6,0,0,9,1,5};
 
@@ -78,18 +77,19 @@ int pos[11][11]={
 
 class save
 {
+   private:
 	char nm[2][30];
-	int poly[14],count,ply;
-	int clr1,clr2;
+	int count,ply;
+	int clr1,clr2,bkclr;
 	int p1rw[7],p1cl[7];
 	int p2rw[7],p2cl[7];
 	int pos[11][11];
+
    public:
-	char fl_nm[30];
-	save();
-	void copy_to();
-	void copy_4m();
-} s;
+	save();				//constuctor
+	void copy_to();			//to copy from global to class
+	void copy_4m();			//to copy from class to global
+} s,nw_gme;
 
 /*********************************************************************
 			CONSTRUCTOR OF CLASS
@@ -97,17 +97,19 @@ class save
 
 save::save()
 {
-	int i,j,k=5,p,q;
+	int i,j,k=5;
 
-	strcpy(fl_nm,"save1.dat");
 	strcpy(nm[0],"Player 1");
 	strcpy(nm[1],"Player 2");
 	count=0;
 	ply=1;
 	clr1=4;
 	clr2=2;
+	bkclr=8;
+
 	for(i=0;i<7;i++)
 		p1rw[i]=p1cl[i]=p2rw[i]=p1cl[i]=0;
+
 	p1rw[2]=p1rw[3]=p1cl[1]=4;
 	p1rw[6]=p2rw[5]=p2rw[6]=10;
 	p1rw[5]=p1cl[3]=p2cl[4]=9;
@@ -122,17 +124,20 @@ save::save()
 	for(i=0;i<11;i++)
 		for(j=0;j<11;j++)
 			pos[i][j]=0;
+
 	pos[0][0]=11;
 	pos[10][5]=22;
 	pos[0][4]=pos[4][0]=pos[4][9]=pos[8][7]=pos[9][0]=pos[10][3]=1;
 	pos[0][2]=pos[1][6]=pos[2][0]=pos[6][0]=pos[6][9]=pos[10][1]=2;
+
 	for(i=0;i<5;i++)
 		for(j=6+i;j<11;j++)
 			pos[i][j]=-1;
+
 	for(j=10;j>5;j--)
 	{
 		for(i=10;i>k;i--)
-			pos[p][q]=-1;
+			pos[i][j]=-1;
 		cout<<endl;
 		k++;
 	}
@@ -145,22 +150,23 @@ save::save()
 void save::copy_to()
 {
 	int i,j;
-	strcpy(fl_nm,::fl_nm);
+
 	strcpy(nm[0],::nm[0]);
 	strcpy(nm[1],::nm[1]);
 	count=::count;
 	ply=::ply;
 	clr1=::clr1;
 	clr2=::clr2;
+	bkclr=::bkclr;
+
 	for(i=0;i<7;i++)
 	{
-		poly[i]=::poly[i];
-		poly[i+7]=::poly[i+7];
 		p1rw[i]=::p1rw[i];
 		p1cl[i]=::p1cl[i];
 		p2rw[i]=::p2rw[i];
 		p2cl[i]=::p2cl[i];
 	}
+
 	for(i=0;i<11;i++)
 		for(j=0;j<11;j++)
 			pos[i][j]=::pos[i][j];
@@ -173,25 +179,47 @@ void save::copy_to()
 void save::copy_4m()
 {
 	int i,j;
-	strcpy(::fl_nm,fl_nm);
+
 	strcpy(::nm[0],nm[0]);
 	strcpy(::nm[1],nm[1]);
 	::count=count;
 	::ply=ply;
 	::clr1=clr1;
 	::clr2=clr2;
+	::bkclr=bkclr;
+
 	for(i=0;i<7;i++)
 	{
-		::poly[i]=poly[i];
-		::poly[i+7]=poly[i+7];
 		::p1rw[i]=p1rw[i];
 		::p1cl[i]=p1cl[i];
 		::p2rw[i]=p2rw[i];
 		::p2cl[i]=p2cl[i];
 	}
+
 	for(i=0;i<11;i++)
 		for(j=0;j<11;j++)
 			::pos[i][j]=pos[i][j];
+}
+
+/*********************************************************************
+			FUNCTION TO INITALISE GRA[HICS
+*********************************************************************/
+
+void graphics_screen()
+{
+	int gd=DETECT,gm,ec;
+	initgraph(&gd,&gm,grp);
+
+	ec=graphresult();
+
+	if(ec!=grOk)  				// an error occurred
+	{
+		cout<<"\"Graphics error:\" \n"<<grapherrormsg(ec)<<endl;
+		cout<<"Enter ur Graphics dir:-\n";
+		gets(grp);
+
+		graphics_screen();
+	}
 }
 
 /*********************************************************************
@@ -202,25 +230,39 @@ void main()
 {
 	clrscr();
 
+	int run=1;
+
+	nw_gme.copy_to();
+
 	int chk,mov,cap,i,poschg,gm_ch;
 	char sav;
 	count=::count;
 
-//	loadin();			//calling of loadin
+	if(run)
+		loadin();		//calling of loadin
+
 	gm_ch=game_cho();		//calling of game choose
 	if(gm_ch==1)
 		goto cont;
 	else if(gm_ch==-1)
 	{
-		credits();
+		if(run)
+			credits();      //callin of credits
 		getch();
 		exit(0);
 	}
 
-	rules();			//calling of rules function
-	clrscr();
-	dice();         		//calling of dice function
-	colour();			//calling of colour function
+	if(run)
+	{
+		rules();			//calling of rules function
+		clrscr();
+		dice();         		//calling of dice function
+		clr_chs(0);			//calling of colour function
+		clr_chs(1);			//calling of colour function
+		clr_match();                    //calling of clr_match
+	}
+	else
+		cout<<"MUKESH"<<endl;           //will never get displayed
 
 cont:	//Graphics initialisation
 	graphics_screen();
@@ -236,6 +278,7 @@ cont:	//Graphics initialisation
 		fillellipse(300,70,10,10);
 
 		getch();
+
 		cleardevice();
 	}
 
@@ -263,6 +306,8 @@ cont:	//Graphics initialisation
 
 top:		cout<<"enter r and c to \"move from\""<<endl;
 		cin>>rw1>>cl1;
+		//getting inputs of move from inital coordinates
+
 		if(pos[rw1][cl1]==0||pos[rw1][cl1]==(-1))
 		{
 			cout<<"entered coordinates are wrong"<<endl
@@ -272,6 +317,8 @@ top:		cout<<"enter r and c to \"move from\""<<endl;
 
 again:		cout<<"enter r and c to \"move to\""<<endl;
 		cin>>rw2>>cl2;
+		//getting inputs of move to final coordinates
+
 		mov=moves();		//calling of moves function
 		if(mov==0)
 		{
@@ -326,32 +373,21 @@ again:		cout<<"enter r and c to \"move to\""<<endl;
 			exit(0);
 		}
 
-		cout<<"do u want to continue"<<endl;
+		cout<<"do u want to continue ('y')"<<endl;
 		cin>>ch;
 		if(ch=='x')
 			exit(0);
 		else if(ch=='s')
-		{
-			file_save();
-			getch();
-		}
+			file_save();             //saving the game
 		else if(ch!='y'&&ch!='Y')
-		{
-			game_choose();
-/*			cout<<"do u want to save be4 exiting ??"<<endl;
-			cin>>sav;
-			if(sav=='y')
-				file_save();
+			game_choose();		 //main menu calling
 
-			closegraph();
-			credits();
-			getch();
-*/ //			exit(0);
-		}
 		count++;
+
 	 }while(ch=='y'||ch=='Y'||ch=='s'||ch=='S');
 
 	getch();
+	cout<<"MUKESH"<<endl;
 
 }
 
@@ -363,7 +399,7 @@ void loadin()
 {
 	clrscr();
 
-	graphics_screen();
+	graphics_screen();		//initialsing graphics
 
 	outtextxy(150,325,"please wait while the game is Loading......");
 	settextstyle(4,0,6);
@@ -377,14 +413,15 @@ void loadin()
 	for(int i=0;i<69;i++)
 	{
 		cout<<(char)176;
-		if(i<45)
-			delay(500-10*i);
+		if(i<32)
+			delay(500-15*i);
 		else
 			delay(50);
 	}
 	settextstyle(0,0,1);
 	outtextxy(200,425,"press any key to continue !!");
 	getch();
+
 	closegraph();
 }
 
@@ -411,7 +448,10 @@ void rules()
 	    <<"\tthe owner of a captured Queen must move it to any cell"<<endl
 	    <<"\tof his opponent's choosing"<<endl;
 	getch();
+
 	delay(800);
+	cout<<"MUKESH"<<endl;
+
 }
 
 /*********************************************************************
@@ -421,7 +461,9 @@ void rules()
 void dice()
 {
 	int i,ran[2];
+
 	randomize();
+
 	cout<<"enter the player 1's name:"<<endl;
 	gets(nm[0]);
 	cout<<"enter the player 2's name:"<<endl;
@@ -443,7 +485,7 @@ roll:	for(i=0;i<2;++i)
 		cout<<"both players have got the \"same\""<<endl
 		    <<"number on the dice, so \"rolling again\""<<endl;
 		delay(700);
-		goto roll;
+		goto roll;              	//to roll dice again
 	}
 
 	if(ran[0]>ran[1])
@@ -456,51 +498,86 @@ roll:	for(i=0;i<2;++i)
 }
 
 /*********************************************************************
-		FUNCTION TO CHOOSE COLOUR FOR COINS
+	     FUNCTION TO CHOOSE COLOUR FOR COINS & BOARD
 *********************************************************************/
-void colour()
+void clr_chs(int bk)
 {
 	int i=0;
-	char cho;
-	char ch[12][3]={"1","2","3","4","5","6","7"
-			,"8","9","10","11","12"};
+	char cho='n';
+	char ch[14][3]={"1","2","3","4","5","6","7","8"
+			,"9","10","11","12","13","14"};
+
 	clrscr();
-
-	cout<<"Do you want to choose colours for your coins"<<endl
-	    <<"by Default"<<endl
-	    <<"Player 1 gets \"RED\" coins"<<endl
-	    <<"Player 2 gets \"GREEN\" coins"<<endl
-	    <<"do you want to change ?? (y\\n)"<<endl;
-	cin>>cho;
-	if(cho=='y')
+	if(!bk)					//coin's colour
 	{
-		graphics_screen();
+		cout<<"Do you want to choose colours for your coins"<<endl
+		    <<"by Default"<<endl
+		    <<"Player 1 gets \"RED\" coins"<<endl
+		    <<"Player 2 gets \"GREEN\" coins"<<endl
+		    <<"do you want to change ?? (y\\n)"<<endl;
+		cin>>cho;
+	}
+	else					//board's colour
+	{
+		cout<<"Do you want to choose colours for the board"<<endl
+		    <<"by Default"<<endl
+		    <<"board has \"GRAY\" colour"<<endl
+		    <<"do you want to change ?? (y\\n)"<<endl;
+		cin>>cho;
+	}
+	if(cho!='y')
+		return;
 
-		cout<<"\t\t Enter the colours you want for your coins"<<endl;
-		for(i=0;i<6;i++)
-		{
-			outtextxy(88+80*i,185,ch[i]);
-			outtextxy(88+80*i,285,ch[i+6]);
-		}
-		for(i=0;i<6;i++)
-		{
-			setcolor(i+1);
-			setfillstyle(1,i+1);
-			fillellipse(90+i*80,160,20,20);
-		}
-		for(i=8;i<14;i++)
-		{
-			setcolor(i+1);
-			setfillstyle(1,i+1);
-			fillellipse(90+(i-8)*80,260,20,20);
-		}
-enter:		gotoxy(1,5);
+	graphics_screen();			//intialise graphics
+	if(!bk)					//colour of coins
+	{
+		cout<<"\t\t Enter the colours you want"
+		    <<"for your coins"<<endl;
+	}
+	else					//colour of board
+	{
+		cout<<"\t\tEnter the board colour you want"<<endl;
+	}
+
+	for(i=0;i<6;i++)
+	{
+		outtextxy(88+80*i,185,ch[i]);
+		outtextxy(88+80*i,285,ch[i+6]);
+	}
+
+	for(i=0;i<6;i++)
+	{
+		setcolor(i+1);
+		setfillstyle(1,i+1);
+		fillellipse(90+i*80,160,20,20);
+	}
+	for(i=8;i<14;i++)
+	{
+		setcolor(i+1);
+		setfillstyle(1,i+1);
+		fillellipse(90+(i-8)*80,260,20,20);
+	}
+
+	setcolor(15);
+	setfillstyle(1,15);
+	fillellipse(90+80*2,360,20,20);
+	outtextxy(85+80*2,385,ch[12]);
+
+	setcolor(15);
+	setfillstyle(1,16);
+	fillellipse(90+80*3,360,19,19);
+	outtextxy(85+80*3,385,ch[13]);
+
+enter:	gotoxy(1,5);
+
+	if(!bk)					//colour of coins
+	{
 		cout<<nm[0]<<"-choose the colour :";
 		cin>>clr1;
 		cout<<nm[1]<<"-choose the colour :";
 		cin>>clr2;
 
-		if((clr1==clr2)||(clr1>13||clr2>13))
+		if((clr1==clr2)||(clr1>14||clr2>14))
 		{
 			gotoxy(1,5);
 			for(i=0;i<4;i++)
@@ -513,9 +590,43 @@ enter:		gotoxy(1,5);
 			clr1+=2;
 		if(clr2>6)
 			clr2+=2;
-
-		closegraph();
 	}
+	else						//colour of board
+	{
+		cout<<"enter the colour"<<endl;
+		cin>>bkclr;
+
+		if(bkclr>14)
+		{
+			gotoxy(1,5);
+			for(i=0;i<4;i++)
+				cout<<"\t\t\t\t\t\t\t\t"<<endl;
+			gotoxy(1,4);
+			cout<<"enter again as choose is wrong"<<endl;
+			goto enter;
+		}
+		if(bkclr>6)
+			bkclr+=2;
+	}
+	cout<<"MUKESH"<<endl;
+	closegraph();
+}
+
+/*********************************************************************
+	     FUNCTION TO CHECK FOR SAME COLOUR OF COINS & BOARD
+*********************************************************************/
+void clr_match()
+{
+	if((clr1!=bkclr)&&(clr2!=bkclr))
+		return;
+	cout<<"colour of the coin and board are same"<<endl
+	    <<"enter them again and make sure dey are diff"<<endl;
+
+	getch();
+
+	clr_chs(0);			//chosing colour of coins
+	clr_chs(1);                     //chosing colour of board
+	clr_match();			//colour match
 }
 
 /*********************************************************************
@@ -526,6 +637,7 @@ int game_cho()
 {
 	int fr;
 	char ch;
+
 gm:	cho=0;
 	cout<<"Do you you want to :-"<<endl
 	    <<"1.Play the new game"<<endl
@@ -537,7 +649,7 @@ gm:	cho=0;
 	{
 nw_gm:		clrscr();
 		cout<<"\n\n\n\n\n\n\n\n\n\n\n\t\t\t";
-		cout<<"NEW GAME STARTED";
+		cout<<"    NEW GAME STARTED";
 		return(0);
 	}
 	else if(cho==2)
@@ -558,6 +670,7 @@ nw_gm:		clrscr();
 			goto gm;
 		}
 	}
+
 	return(-1);
 }
 
@@ -566,119 +679,132 @@ nw_gm:		clrscr();
 			FUNCTION TO CHOOSE THE GAME
 *********************************************************************/
 
-int game_choose()
+void game_choose()
 {
 	int fr;
-	char ch12,sav;
+	char ch12,sav,cho12;
 gm:	cho=0;
+
+	closegraph();
+
 	cout<<"Do you you want to :-"<<endl
 	    <<"1.Play the new game"<<endl
 	    <<"2.Continue current game"<<endl
 	    <<"3.Save the current game"<<endl
-	    <<"3.See the saved games"<<endl
-	    <<"4.Play the saved game "<<endl
-	    <<"5.Delete a exirsting file"<<endl
-	    <<"6.Read the instructions"<<endl
-	    <<"7.Choose ur coin colour"<<endl
-	    <<"8.Any other key to exit"<<endl
-	    <<"enter ur choice:";
-	cin>>cho;
-	if(cho==1)
+	    <<"4.See the saved games"<<endl
+	    <<"5.Play the saved game "<<endl
+	    <<"6.Delete a exirsting file"<<endl
+	    <<"7.Read the instructions"<<endl
+	    <<"8.Choose ur coin colour"<<endl
+	    <<"9.Choose board colour"<<endl
+	    <<"\nAny other key to exit"<<endl
+	    <<"\nenter ur choice:";
+	cin>>cho12;
+	cho=(char)cho12;
+
+	if(cho==49)
 	{
-nw_gm:		closegraph();
+nw_gm:
 		cout<<"\n\n\n\n\n\n\n\n\n\n\n\t\t\t";
-		cout<<"NEW GAME STARTED";
-		save c;
-		c.copy_4m();
-		graphics_screen();
-		draw();			//calling of draw function
-		modi(1);		//calling of modi function
+		cout<<"     NEW GAME STARTED";
+
+		nw_gme.copy_4m();
+		new_gm=1;
 		count=-1;
 		ch='y';
-		return(0);
 	}
-	else if(cho==2)
+	else if(cho==50)
 	{
 		ch='y';
-		return(0);
 	}
-	else if(cho==3)
+	else if(cho==51)
+	{
+		file_save();
+		ch='y';
+	}
+	else if(cho==52)
 	{
 		file_list();
 		getch();
 		ch='y';
-		return(0);
 	}
-	else if(cho==4)
+	else if(cho==53)
 	{
 		fr=file_read();
 		if(fr==0)
 			goto nw_gm;
 		else
 		{
-			closegraph();
-			graphics_screen();
-			draw();			//calling of draw function
-			modi(1);		//calling of modi function
 			count--;
 			ch='y';
-			return(1);
 		}
-
 	}
-	else if(cho==5)
+	else if(cho==54)
 	{
-		closegraph();
 		file_del();
-		getch();
 		clrscr();
-		graphics_screen();
-		draw();			//calling of draw function
-		modi(1);		//calling of modi function
 		ch='y';
-		goto gm;
 	}
-	else if(cho==6)
+	else if(cho==55)
 	{
-		closegraph();
 		rules();
-		graphics_screen();
-		draw();			//calling of draw function
-		modi(1);		//calling of modi function
 		ch='y';
-		return(0);
 	}
-	else if(cho==7)
+	else if(cho==56)
 	{
-		closegraph();
-		colour();
+		clr1=4;
+		clr2=2;
+
+		clr_chs(0);
+		clr_match();
 		graphics_screen();
 		draw();			//calling of draw function
 		modi(1);		//calling of modi function
 		ch='y';
-		return(0);
+	}
+	else if(cho==57)
+	{
+		bkclr=8;
+
+		clr_chs(1);
+		clr_match();
+		graphics_screen();
+		draw();			//calling of draw function
+		modi(1);		//calling of modi function
+		ch='y';
 	}
 	else
 	{
 		cout<<"are u sure u wanna exit this amazing game??"<<endl;
 		cin>>ch12;
+
 		if(ch12!='y')
 		{
-			closegraph();
-			colour();
+			ch='y';
 			graphics_screen();
 			draw();			//calling of draw function
 			modi(1);		//calling of modi function
-			ch='y';
-			return(0);
+			return;
 		}
+
 		cout<<"do u want to save be4 exiting ??"<<endl;
 		cin>>sav;
 		if(sav=='y')
 			file_save();
+		exit(0);
 
 	}
-	return(-1);
+
+	graphics_screen();
+
+	draw();			//calling of draw function
+	modi(1);		//calling of modi function
+
+	if(new_gm==1)
+	{
+		fillellipse(450,65,5,5);
+		fillellipse(430,145,5,5);
+	}
 }
 
 /*********************************************************************
@@ -688,6 +814,7 @@ nw_gm:		closegraph();
 void file_list()
 {
 	char file_nm[30];
+
 	file.open("txtfl_MK.txt",ios::in|ios::out);
 	if(!file)
 	{
@@ -696,6 +823,7 @@ void file_list()
 		getch();
 		return;
 	}
+
 	cout<<"the existing save files are:"<<endl;
 	while(!file.eof())
 	{
@@ -813,6 +941,7 @@ int file_read()
 void file_del()
 {
 	char name[30],buff[30];
+
 	file_list();
 	cout<<"enter the file name which u wanna delete"<<endl;
 	gets(name);
@@ -836,6 +965,7 @@ void file_del()
 		getch();
 		return;
 	}
+
 	file.open("txtfl_MK.txt",ios::in);
 	if(!file)
 	{
@@ -854,6 +984,7 @@ void file_del()
 
 	file.close();
 	temp.close();
+
 	remove("txtfl_MK.txt");
 	rename("temp.txt","txtfl_MK.txt");
 
@@ -870,7 +1001,7 @@ void draw()
 	int i,j,n=6,x=460,y=10;
 
 	setbkcolor(0);
-	setfillstyle(1,8);
+	setfillstyle(1,bkclr);
 
 	for(j=0,y;j<6;++j,++n)
 	{
@@ -882,8 +1013,10 @@ void draw()
 		x=x-10-20*n;
 		y+=20;
 	}
+
 	x+=20;
 	n=n-2;
+
 	for(j=0;j<5;++j,--n)
 	{
 		for(i=0;i<n;x+=20,++i)
@@ -895,7 +1028,6 @@ void draw()
 		y+=20;
 	}
 
-	getch();
 }
 
 /*********************************************************************
@@ -1030,6 +1162,7 @@ int moves()
 				    (rw2==i&&cl2==(j-1)))
 					return(1);
 		}
+
 	return(0);
 }
 
@@ -1040,6 +1173,7 @@ int moves()
 void modi(int z)
 {
 	int prw[7],pcl[7];
+
 	for(int j=0;j<2;++j)
 	{
 		for(int k=0;k<7;++k)
@@ -1134,6 +1268,7 @@ agn:		lst=lstrw();
 			else
 				coin=22;
 		}
+
 		if(pos[rw1][cl1]==b)
 		{
 			if(ply==1)
@@ -1141,15 +1276,18 @@ agn:		lst=lstrw();
 			else
 				coin=2;
 		}
+
 //To errase the circle
-		setcolor(8);
-		setfillstyle(1,8);
+		setcolor(bkclr);
+		setfillstyle(1,bkclr);
+
 		if(rw1<=5)
 		{
 			X=x+10*(2*cl1+1)-10*rw1;
 			Y=y+15+20*rw1;
 			fillellipse(X,Y,r,r);
 		}
+
 		if(rw1>5)
 		{
 			int re;
@@ -1158,18 +1296,21 @@ agn:		lst=lstrw();
 			Y=y+135+20*re;
 			fillellipse(X,Y,r,r);
 		}
+
 //To make the new circle
 		setcolor(15);
 		if(ply==1)
 			setfillstyle(1,clr1);
 		else
 			setfillstyle(1,clr2);
+
 		if(rw2<=5)
 		{
 			X=x+10*(2*cl2+1)-10*rw2;
 			Y=y+15+20*rw2;
 			fillellipse(X,Y,r,r);
 		}
+
 		if(rw2>5)
 		{
 			int re;
@@ -1185,6 +1326,7 @@ agn:		lst=lstrw();
 	}
 	else
 		return(1);
+
 	return(0);
 }
 
@@ -1420,6 +1562,7 @@ int capchk()
 		else if(pos[x][y]==b1)
 			return(4);
 	}
+
 	return(0);
 }
 
@@ -1457,6 +1600,7 @@ int lstrw()
 			if(rw2==i&&cl2==j)//right down
 				return(1);
 	}
+
 	return(0);
 }
 
@@ -1508,13 +1652,12 @@ void credits()
 	    <<"\t\tthroughout the period of our project."<<endl
 	    <<"\t\tHe has been motivating and inspiring us."<<endl
 	    <<"\t\tAlso, he has given great opportunities to explore"<<endl
-	    <<"\t\tand instill programming skills."<<endl
-	    <<"\tI also thank my friends R.Ashwin and Shagesh"<<endl
-	    <<"\tfor helping me in making my project, thanks guys"<<endl
-	    <<"\t\tFor helping us in making this game a succesful one"<<endl
+	    <<"\t\t\tand instill programming skills."<<endl
+	    <<"\t\tI also thank my friends R.Ashwin and Shagesh"<<endl
+	    <<"\t\tfor helping us in making this project"<<endl
+	    <<"\t\t\t\ta succesful one"<<endl
 	    <<"\t\t\t\t thank you ALL"<<endl;
 }
-
 
 
 /* we thank our computer teacher for being a spectacular support and guide
