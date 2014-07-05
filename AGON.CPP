@@ -6,10 +6,10 @@
 #include<conio.h>
 #include<graphics.h>
 #include<stdlib.h>
-#include<time.h>
 #include<dos.h>
 #include<process.h>
 #include<string.h>
+#include<stdio.h>
 
 /*********************************************************************
 			FUNCTIONS USED
@@ -27,10 +27,10 @@ void modi(int);                 //FUNCTION FOR POSTION MODIFICATION
 int poschag(int);               //FUNCTION FOR POISTION CHANGING
 int moves();			//FUNCTION TO CHECK FOR CORRECT MOVES
 int lstrw();			//FUNCTION MOVE TO LAST ROW
-void test();			//FUNCTION TO CHECK FILE EXISTANCE
 int game_choose();              //FUNCTION TO CHOOSE THE GAME
 void file_save();               //FUNCTION TO SAVE THE GAME
-void file_read();		//FUNCTION TO READ THE SAVE FILE
+int file_read();		//FUNCTION TO READ THE SAVE FILE
+void credits();			//FUNCTION TO DISPLAY CREDITS
 
 /*********************************************************************
 			GLOBAL VARIABLES
@@ -185,7 +185,7 @@ void main()
 {
 	clrscr();
 
-	int chk,mov,cap,i,poschg,gm_ch,count;
+	int chk,mov,cap,i,poschg,gm_ch;
 	char sav;
 	count=::count;
 
@@ -299,7 +299,7 @@ again:		cout<<"enter r and c to \"move to\""<<endl;
 		if(ch!='y'&&ch!='Y')
 		{
 			closegraph();
-			cout<<"\n\nthanks for playing"<<endl;
+			credits();
 			delay(2000);
 			exit(0);
 		}
@@ -345,9 +345,9 @@ void dice()
 	int i,ran[2];
 	randomize();
 	cout<<"enter the player 1's name:"<<endl;
-	cin.getline(nm[0],30);
+	gets(nm[0]);
 	cout<<"enter the player 2's name:"<<endl;
-	cin.getline(nm[1],30);
+	gets(nm[1]);
 
 roll:	for(i=0;i<2;++i)
 	{
@@ -509,10 +509,10 @@ void file_save()
 	count++;
 	s.copy_to();
 	count--;
-	file.open("save.dat",ios::out|ios::binary);
+	file.open("mk1.dat",ios::out|ios::binary);
 	if(!file)
 	{
-		cout<<"file not opened";
+		cout<<"file not opened"<<endl;
 		flag=0;
 		getch();
 		return;
@@ -527,33 +527,21 @@ void file_save()
 			FUNCTION TO READ FROM SAVE FILE
 *********************************************************************/
 
-void file_read()
+int file_read()
 {
-	file.open("save.dat",ios::in|ios::binary);
+	file.open("mk1.dat",ios::in|ios::binary);
 	if(!file)
 	{
-		cout<<"file not opened";
+		cout<<"file not opened"<<endl;
 		flag=0;
 		getch();
-
+		return(0);
 	}
 	file.read((char*)&s,sizeof(s));
 	s.copy_4m();
 	cout<<"data retreaved successfully"<<endl;
 	file.close();
-	return;
-}
-
-/*********************************************************************
-		FUNCTION TO TEST FOR FILE EXISTANCE
-*********************************************************************/
-
-void test()
-{
-	file.open("save.dat",ios::out|ios::noreplace|ios::binary);
-	if(file)
-		flag=10;
-	file.close();
+	return(1);
 }
 
 /*********************************************************************
@@ -562,25 +550,24 @@ void test()
 
 int game_choose()
 {
+	int fr;
 	cho=0;
-	test();
-//	if(flag==10)
-	{
-		cout<<"save data exist for the current game\n"
-		    <<"do you you want to \n"
-		    <<"1.Play the saved game  OR\n"
-		    <<"2.Play the new game\n"
-		    <<"enter ur choice:";
-		cin>>cho;
-	}
+	cout<<"Do you you want to \n"
+	    <<"1.Play the saved game  OR\n"
+	    <<"2.Play the new game\n"
+	    <<"enter ur choice:";
+	cin>>cho;
 	if(cho==1)
 	{
-		file_read();
-		return(1);
+		fr=file_read();
+		if(fr==0)
+			goto nw_gm;
+		else
+			return(1);
 	}
 	else
 	{
-		clrscr();
+nw_gm:		clrscr();
 		cout<<"\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t";
 		cout<<"NEW GAME STARTED";
 		return(0);
@@ -1152,4 +1139,13 @@ int lstrw()
 				return(1);
 	}
 	return(0);
+}
+
+/*********************************************************************
+			FUNCTION TO DISPLAY CREDITS
+*********************************************************************/
+
+void credits()
+{
+	cout<<"\n\nthanks for playing"<<endl;
 }
