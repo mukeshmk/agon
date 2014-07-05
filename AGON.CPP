@@ -2,20 +2,20 @@
 			HEADER FILES USED
 *********************************************************************/
 
-#include<graphics.h>
 #include<fstream.h>
-#include<process.h>
+#include<conio.h>
+#include<graphics.h>
 #include<stdlib.h>
+#include<dos.h>
+#include<process.h>
 #include<string.h>
 #include<stdio.h>
-#include<conio.h>
-#include<dos.h>
 
 /*********************************************************************
 			FUNCTIONS USED
 *********************************************************************/
 
-void loadin();			//FUNCTION TO DISPALY LOADING
+void laodin();			//FUNCTION TO DISPLAY LOADING
 void rules();			//FUNCTION TO DISPLAY RULES OF THE GAME
 void dice();                    //FUNCTION FOR ROLLING THE DICE
 void hexagon(int,int);          //FUNCTION TO CHANGE THE COORDINATES
@@ -33,18 +33,12 @@ void file_save();               //FUNCTION TO SAVE THE GAME
 int file_read();		//FUNCTION TO READ THE SAVE FILE
 void credits();			//FUNCTION TO DISPLAY CREDITS
 
-void graphics_screen()			//FUNCTION TO INITALISE GRA[HICS
-{
-	int gd=DETECT,gm;
-	initgraph(&gd,&gm,"c:\\turboc3\\bgi");
-}
-
 /*********************************************************************
 			GLOBAL VARIABLES
 *********************************************************************/
 
 const int plyr[2]={1,2};
-char nm[2][30];
+char nm[2][30],fl_nm[30];
 int poly[14],rw1,cl1,rw2,cl2,ply=1,count=0;
 int clr1=4,clr2=2,flag,cho;
 fstream file;
@@ -81,9 +75,14 @@ class save
 	int p2rw[7],p2cl[7];
 	int pos[11][11];
    public:
+	char fl_nm[30];
 	save();
 	void copy_to();
 	void copy_4m();
+	char* ret_fl_nm()
+	{
+		return fl_nm;
+	}
 } s;
 
 /*********************************************************************
@@ -94,6 +93,7 @@ save::save()
 {
 	int i,j,k=5,p,q;
 
+	strcpy(fl_nm,"default");
 	strcpy(nm[0],"Player 1");
 	strcpy(nm[1],"Player 2");
 	count=0;
@@ -140,6 +140,7 @@ void save::copy_to()
 {
 	int i,j;
 
+	strcpy(fl_nm,::fl_nm);
 	strcpy(nm[0],::nm[0]);
 	strcpy(nm[1],::nm[1]);
 	count=::count;
@@ -168,6 +169,7 @@ void save::copy_4m()
 {
 	int i,j;
 
+	strcpy(::fl_nm,fl_nm);
 	strcpy(::nm[0],nm[0]);
 	strcpy(::nm[1],nm[1]);
 	::count=count;
@@ -199,25 +201,25 @@ void main()
 	int chk,mov,cap,i,poschg,gm_ch;
 	char sav;
 	count=::count;
-
-	loadin();			//calling of loadin
+//	loadin();			//calling of loadin
 	gm_ch=game_choose();		//calling of game choose
 	if(gm_ch==1)
 		goto cont;
 	else if(gm_ch==-1)
 	{
-		credits();
+//		credits();
 		getch();
 		exit(0);
 	}
 
-	rules();			//calling of rules function
+/*	rules();			//calling of rules function
 	clrscr();
 	dice();         		//calling of dice function
 	colour();			//calling of colour function
-
+*/
 cont:	//Graphics initialisation
-	graphics_screen();
+	int gd=DETECT,gm;
+	initgraph(&gd,&gm,"c:\\turboc3\\bgi");
 
 	if(gm_ch==1)
 	{
@@ -315,7 +317,7 @@ again:		cout<<"enter r and c to \"move to\""<<endl;
 			if(count%2==0)
 				cout<<nm[0]<<" has WON the game"<<endl;
 			else
-				cout<<nm[1]<<" has WON the game"<<endl;
+				cout<<nm[0]<<" has WON the game"<<endl;
 			getch();
 			delay(800);
 			exit(0);
@@ -337,9 +339,9 @@ again:		cout<<"enter r and c to \"move to\""<<endl;
 			if(sav=='y')
 				file_save();
 
-			closegraph();
+/*			closegraph();
 			credits();
-			getch();
+*/			getch();
 			exit(0);
 		}
 		count++;
@@ -357,7 +359,8 @@ void loadin()
 {
 	clrscr();
 
-	graphics_screen();
+	int gd=DETECT,gm;
+	initgraph(&gd,&gm,"c:\\turboc3\\bgi");
 
 	outtextxy(150,325,"please wait while the game is Loading......");
 	settextstyle(4,0,6);
@@ -468,7 +471,8 @@ void colour()
 	cin>>cho;
 	if(cho=='y')
 	{
-		graphics_screen();
+		int gd=DETECT,gm;
+		initgraph(&gd,&gm,"c:\\turboc3\\bgi");
 
 		cout<<"\t\t Enter the colours you want for your coins"<<endl;
 		for(i=0;i<6;i++)
@@ -518,17 +522,90 @@ enter:		gotoxy(1,5);
 
 void file_save()
 {
-	count++;
-	s.copy_to();
-	count--;
-	file.open("mk1.dat",ios::out|ios::binary);
+/*	char ch;
+	int fl;
+	ofstream fileout,fout,chk;// ofstream variables//
+
+	chk.open("mk3.dat",ios::nocreate);//checking if file already exist..?
+	if(chk)
+	{
+		gotoxy(30,18);
+		cout<<"File already exists....";
+		cout<<"\n\t\tDo you want to replace the excisting file..?[Enter]";
+		cin>>ch;
+		if(ch=='y')
+			fl=1;
+	}
+	else
+		fl=1;
+	if(fl)//if not...
+	{//save the game...
+		fileout.open("mk3.dat",ios::in|ios::binary);
+		fileout.write((char*)&s,sizeof(s));
+		fout.open("save.txt",ios::app);
+		fout<<"mk3"<<"\n";//save the name of the file in another file..
+		cout<<"\n\n\t\t\t\tWRITE SUCESSFUL.....";
+		fileout.close();
+		getch();
+	}
+} */
+	file.open("mk3.dat",ios::in|ios::binary);
 	if(!file)
 	{
-		cout<<"file not opened"<<endl;
+		cout<<"file not opened save 123"<<endl;
 		flag=0;
 		getch();
 		return;
 	}
+
+der:	file.seekp(0,ios::beg);
+	cout<<"the existing files are:"<<endl;
+	if(file.eof()==0)
+	{
+		while(file.eof())
+		if(file.read((char*)&s,sizeof(s)))
+		{
+cout<<"123\n";
+			cout<<s.ret_fl_nm()<<endl;
+		}
+	}
+	else if(!file.eof())
+	{
+		cout<<"there is no data in the file"<<endl
+		    <<"create new one !!"<<endl;
+	}
+
+	cout<<"enter file name to save as: ";
+	gets(fl_nm);
+
+	file.seekp(0,ios::beg);
+	while(file.read((char*)&s,sizeof(s)))
+	{
+cout<<"4\n";
+		if(strcmp(fl_nm,s.ret_fl_nm())==0)
+		{
+cout<<"5\n";
+			cout<<"file already exists"
+			    <<"enter file name again"<<endl;
+			goto der;
+		}
+	}
+	file.close();
+
+	file.open("mk3.dat",ios::out|ios::binary);
+	if(!file)
+	{
+		cout<<"file not opened save"<<endl;
+		flag=0;
+		getch();
+		return;
+	}
+
+//	file.seekg(0,ios::beg);
+	count++;
+	s.copy_to();
+	count--;
+
 	file.write((char*)&s,sizeof(s));
 	cout<<"save successful"<<endl;
 	file.close();
@@ -541,19 +618,77 @@ void file_save()
 
 int file_read()
 {
-	file.open("mk1.dat",ios::in|ios::binary);
+
+/*	ifstream filein;
+	filein.open("mk3.dat",ios::out|ios::binary);
+	filein.read((char*)&s,sizeof(s));
+	if(!filein)
+	{
+		cout<<"\n\nNO SAVES FOUND!!!\n";
+		cout<<"\nPlease Start a new game..";
+		settextstyle(0,0,1);
+		getch();
+		return(0);
+	}
+	else
+	{
+		s.copy_4m();
+		cout<<"\n\n\t\t LOAD SUCESSFUL...";
+		cout<<"\n\t\tPress any key to continue...!";
+		getch();
+		return(1);
+	}
+}
+*/
+	int chs;
+
+	file.open("mk3.dat",ios::in|ios::binary);
 	if(!file)
 	{
-		cout<<"file not opened"<<endl;
+		cout<<"file not opened read"<<endl;
 		flag=0;
 		getch();
 		return(0);
 	}
-	file.read((char*)&s,sizeof(s));
-	s.copy_4m();
-	cout<<"data retreaved successfully"<<endl;
-	file.close();
-	return(1);
+
+	cout<<"the existing files are:"<<endl;
+	while(file.read((char*)&s,sizeof(s)))
+	{
+cout<<"456";
+		cout<<s.ret_fl_nm()<<endl;
+	}
+
+here:	cout<<"enter file name to retrive the data from: ";
+	gets(fl_nm);
+
+	file.seekp(0,ios::beg);
+	while(file.read((char*)&s,sizeof(s)))
+	{
+cout<<"1\n";
+		if(!strcmp(fl_nm,s.ret_fl_nm()))
+		{
+			file.seekp(-1*sizeof(s),ios::cur);
+			s.copy_4m();
+cout<<"2\n";
+			cout<<"data retreaved successfully"<<endl;
+			file.close();
+			return(1);
+		}
+		else
+		{
+cout<<"3\n";
+			cout<<"file does not exist"<<endl
+			    <<"do u want to "<<endl
+			    <<"1.enter again or"<<endl
+			    <<"2.start new game ??"<<endl;
+			cin>>chs;
+			if(chs==1)
+				goto here;
+			else
+				break;
+		}
+	}
+return(0); //return(0);
 }
 
 /*********************************************************************
@@ -573,8 +708,20 @@ int game_choose()
 	if(cho==1)
 	{
 		fr=file_read();
+cout<<"****";
+getch();
 		if(fr==0)
+		{
+cout<<"@@@";
+getch();
 			goto nw_gm;
+		}
+else if(fr==2)
+{
+cout<<"check here";
+getch();
+return(-1);
+}
 		else
 			return(1);
 	}
@@ -833,7 +980,7 @@ void position(int*prw,int*pcl)
 
 int poschag(int z)
 {
-	int a,b,i,j,x=460,y=10,r=5,X,Y,coin=0,lst;
+	int a,b,i,j,x=460,y=10,r=5,X,Y,flag=0,lst;
 
 	if(ply==1)
 	{
@@ -858,16 +1005,16 @@ agn:		lst=lstrw();
 		if(pos[rw1][cl1]==a)
 		{
 			if(ply==1)
-				coin=11;
+				flag=11;
 			else
-				coin=22;
+				flag=22;
 		}
 		if(pos[rw1][cl1]==b)
 		{
 			if(ply==1)
-				coin=1;
+				flag=1;
 			else
-				coin=2;
+				flag=2;
 		}
 //To errase the circle
 		setcolor(8);
@@ -908,12 +1055,38 @@ agn:		lst=lstrw();
 		}
 
 		pos[rw1][cl1]=0;
-		pos[rw2][cl2]=coin;
+		pos[rw2][cl2]=flag;
 		modi(0);               //calling of modi function
 	}
 	else
 		return(1);
 	return(0);
+}
+
+/*********************************************************************
+		FUNCTION TO CHECK FOR WIN
+**********************************************************************/
+
+int winchk(int ply)
+{
+	int x,y;
+
+	if(ply==1)
+	{
+		x=11;
+		y=1;
+	}
+	else
+	{
+		x=22;
+		y=2;
+	}
+
+	if(pos[5][5]==x&&pos[4][4]==y&&pos[4][5]==y&&
+	   pos[5][4]==y&&pos[5][6]==y&&pos[6][4]==y&&pos[6][5]==y)
+		return(1);
+	else
+		return(0);
 }
 
 /*********************************************************************
@@ -1186,32 +1359,6 @@ int lstrw()
 				return(1);
 	}
 	return(0);
-}
-
-/*********************************************************************
-		FUNCTION TO CHECK FOR WIN
-**********************************************************************/
-
-int winchk(int ply)
-{
-	int x,y;
-
-	if(ply==1)
-	{
-		x=11;
-		y=1;
-	}
-	else
-	{
-		x=22;
-		y=2;
-	}
-
-	if(pos[5][5]==x&&pos[4][4]==y&&pos[4][5]==y&&
-	   pos[5][4]==y&&pos[5][6]==y&&pos[6][4]==y&&pos[6][5]==y)
-		return(1);
-	else
-		return(0);
 }
 
 /*********************************************************************
