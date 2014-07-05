@@ -2,19 +2,20 @@
 			HEADER FILES USED
 *********************************************************************/
 
-#include<fstream.h>
-#include<conio.h>
 #include<graphics.h>
-#include<stdlib.h>
-#include<dos.h>
+#include<fstream.h>
 #include<process.h>
+#include<stdlib.h>
 #include<string.h>
 #include<stdio.h>
+#include<conio.h>
+#include<dos.h>
 
 /*********************************************************************
 			FUNCTIONS USED
 *********************************************************************/
 
+void loadin();			//FUNCTION TO DISPALY LOADING
 void rules();			//FUNCTION TO DISPLAY RULES OF THE GAME
 void dice();                    //FUNCTION FOR ROLLING THE DICE
 void hexagon(int,int);          //FUNCTION TO CHANGE THE COORDINATES
@@ -31,6 +32,12 @@ int game_choose();              //FUNCTION TO CHOOSE THE GAME
 void file_save();               //FUNCTION TO SAVE THE GAME
 int file_read();		//FUNCTION TO READ THE SAVE FILE
 void credits();			//FUNCTION TO DISPLAY CREDITS
+
+void graphics_screen()			//FUNCTION TO INITALISE GRA[HICS
+{
+	int gd=DETECT,gm;
+	initgraph(&gd,&gm,"c:\\turboc3\\bgi");
+}
 
 /*********************************************************************
 			GLOBAL VARIABLES
@@ -118,7 +125,7 @@ save::save()
 			pos[i][j]=-1;
 	for(p=10;p>5;p--)
 	{
-		for(q=10;q>k;q++)
+		for(q=10;q<k;q++)
 			pos[p][q]=-1;
 		k++;
 	}
@@ -193,27 +200,47 @@ void main()
 	char sav;
 	count=::count;
 
+	loadin();			//calling of loadin
 	gm_ch=game_choose();		//calling of game choose
 	if(gm_ch==1)
 		goto cont;
+	else if(gm_ch==-1)
+	{
+		credits();
+		getch();
+		exit(0);
+	}
+
 	rules();			//calling of rules function
 	clrscr();
 	dice();         		//calling of dice function
 	colour();			//calling of colour function
 
 cont:	//Graphics initialisation
-	int gd=DETECT,gm;
-	initgraph(&gd,&gm,"c:\\turboc3\\bgi");
+	graphics_screen();
+
+	if(gm_ch==1)
+	{
+		cout<<"\nplayer 1's coins are of the colour"<<endl;
+		setfillstyle(1,clr1);
+		fillellipse(300,25,10,10);
+
+		cout<<"\n\nplayer 2's coins are of the colour"<<endl;
+		setfillstyle(1,clr2);
+		fillellipse(300,70,10,10);
+
+		getch();
+		cleardevice();
+	}
 
 	draw();			//calling of draw function
 	modi(1);		//calling of modi function
-
 
 	char ch;
 	do
 	{
 		gotoxy(1,1);
-		for(i=0;i<25;++i)
+		for(i=0;i<28;++i)
 			cout<<"\t\t\t\t\t\t   "<<endl;
 
 		if(count%2==0)
@@ -288,30 +315,71 @@ again:		cout<<"enter r and c to \"move to\""<<endl;
 			if(count%2==0)
 				cout<<nm[0]<<" has WON the game"<<endl;
 			else
-				cout<<nm[0]<<" has WON the game"<<endl;
+				cout<<nm[1]<<" has WON the game"<<endl;
 			getch();
 			delay(800);
 			exit(0);
 		}
 
-		cout<<"do u want to save"<<endl;
-		cin>>sav;
-		if(sav=='y')
-			file_save();
 		cout<<"do u want to continue"<<endl;
 		cin>>ch;
-		if(ch!='y'&&ch!='Y')
+		if(ch=='x')
+			exit(0);
+		else if(ch=='s')
 		{
+			file_save();
+			getch();
+		}
+		else if(ch!='y'&&ch!='Y')
+		{
+			cout<<"do u want to save be4 exiting ??"<<endl;
+			cin>>sav;
+			if(sav=='y')
+				file_save();
+
 			closegraph();
 			credits();
 			getch();
 			exit(0);
 		}
 		count++;
-	 }while(ch=='y'||ch=='Y');
+	 }while(ch=='y'||ch=='Y'||ch=='s'||ch=='S');
 
 	getch();
 
+}
+
+/*********************************************************************
+			FUNCTION TO DISPLAY LOADING
+*********************************************************************/
+
+void loadin()
+{
+	clrscr();
+
+	graphics_screen();
+
+	outtextxy(150,325,"please wait while the game is Loading......");
+	settextstyle(4,0,6);
+	outtextxy(225,100,"AGON");
+
+	bar(45,364,601,386);
+	setfillstyle(1,0);
+	bar(46,365,600,385);
+
+	gotoxy(7,24);
+	for(int i=0;i<69;i++)
+	{
+		cout<<(char)176;
+		if(i<45)
+			delay(500-10*i);
+		else
+			delay(50);
+	}
+	settextstyle(0,0,1);
+	outtextxy(200,425,"press any key to continue !!");
+	getch();
+	closegraph();
 }
 
 /*********************************************************************
@@ -382,65 +450,6 @@ roll:	for(i=0;i<2;++i)
 }
 
 /*********************************************************************
-		FUNCTION TO DRAW THE HEXAGON
-*********************************************************************/
-
-void draw()
-{
-	int i,j,n=6,x=460,y=10;
-
-	setbkcolor(0);
-	setfillstyle(1,8);
-
-	for(j=0,y;j<6;++j,++n)
-	{
-		for(i=0;i<n;x+=20,++i)
-		{
-			hexagon(x,y);	//calling of hexagon function
-			fillpoly(7,poly);
-		}
-		x=x-10-20*n;
-		y+=20;
-	}
-	x+=20;
-	n=n-2;
-	for(j=0;j<5;++j,--n)
-	{
-		for(i=0;i<n;x+=20,++i)
-		{
-			hexagon(x,y);	//calling of hexagon function
-			fillpoly(7,poly);
-		}
-		x=x+10-20*n;
-		y+=20;
-	}
-
-	getch();
-}
-
-/*********************************************************************
-		FUNCTION TO CHANGE THE COORDINATES
-*********************************************************************/
-
-void hexagon (int x, int y)
-{
-	poly[0]=x+10;
-	poly[1]=y;
-	poly[2]=x+20;
-	poly[3]=y+10;
-	poly[4]=x+20;
-	poly[5]=y+20;
-	poly[6]=x+10;
-	poly[7]=y+30;
-	poly[8]=x;
-	poly[9]=y+20;
-	poly[10]=x;
-	poly[11]=y+10;
-	poly[12]=x+10;
-	poly[13]=y;
-}
-
-/*********************************************************************
 		FUNCTION TO CHOOSE COLOUR FOR COINS
 *********************************************************************/
 void colour()
@@ -459,8 +468,7 @@ void colour()
 	cin>>cho;
 	if(cho=='y')
 	{
-		int gd=DETECT,gm;
-		initgraph(&gd,&gm,"c:\\turboc3\\bgi");
+		graphics_screen();
 
 		cout<<"\t\t Enter the colours you want for your coins"<<endl;
 		for(i=0;i<6;i++)
@@ -559,6 +567,7 @@ int game_choose()
 	cout<<"Do you you want to \n"
 	    <<"1.Play the saved game  OR\n"
 	    <<"2.Play the new game\n"
+	    <<"3.Any other key to exit\n"
 	    <<"enter ur choice:";
 	cin>>cho;
 	if(cho==1)
@@ -569,15 +578,75 @@ int game_choose()
 		else
 			return(1);
 	}
-	else
+	else if(cho==2)
 	{
 nw_gm:		clrscr();
 		cout<<"\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t";
 		cout<<"NEW GAME STARTED";
 		return(0);
 	}
+	else
+		return(-1);
 }
 
+/*********************************************************************
+		FUNCTION TO DRAW THE HEXAGON
+*********************************************************************/
+
+void draw()
+{
+	int i,j,n=6,x=460,y=10;
+
+	setbkcolor(0);
+	setfillstyle(1,8);
+
+	for(j=0,y;j<6;++j,++n)
+	{
+		for(i=0;i<n;x+=20,++i)
+		{
+			hexagon(x,y);	//calling of hexagon function
+			fillpoly(7,poly);
+		}
+		x=x-10-20*n;
+		y+=20;
+	}
+	x+=20;
+	n=n-2;
+	for(j=0;j<5;++j,--n)
+	{
+		for(i=0;i<n;x+=20,++i)
+		{
+			hexagon(x,y);	//calling of hexagon function
+			fillpoly(7,poly);
+		}
+		x=x+10-20*n;
+		y+=20;
+	}
+
+	getch();
+}
+
+/*********************************************************************
+		FUNCTION TO CHANGE THE COORDINATES
+*********************************************************************/
+
+void hexagon (int x, int y)
+{
+	poly[0]=x+10;
+	poly[1]=y;
+	poly[2]=x+20;
+	poly[3]=y+10;
+	poly[4]=x+20;
+	poly[5]=y+20;
+	poly[6]=x+10;
+	poly[7]=y+30;
+	poly[8]=x;
+	poly[9]=y+20;
+	poly[10]=x;
+	poly[11]=y+10;
+	poly[12]=x+10;
+	poly[13]=y;
+}
 
 
 /*********************************************************************
@@ -764,7 +833,7 @@ void position(int*prw,int*pcl)
 
 int poschag(int z)
 {
-	int a,b,i,j,x=460,y=10,r=5,X,Y,flag=0,lst;
+	int a,b,i,j,x=460,y=10,r=5,X,Y,coin=0,lst;
 
 	if(ply==1)
 	{
@@ -789,16 +858,16 @@ agn:		lst=lstrw();
 		if(pos[rw1][cl1]==a)
 		{
 			if(ply==1)
-				flag=11;
+				coin=11;
 			else
-				flag=22;
+				coin=22;
 		}
 		if(pos[rw1][cl1]==b)
 		{
 			if(ply==1)
-				flag=1;
+				coin=1;
 			else
-				flag=2;
+				coin=2;
 		}
 //To errase the circle
 		setcolor(8);
@@ -839,38 +908,12 @@ agn:		lst=lstrw();
 		}
 
 		pos[rw1][cl1]=0;
-		pos[rw2][cl2]=flag;
+		pos[rw2][cl2]=coin;
 		modi(0);               //calling of modi function
 	}
 	else
 		return(1);
 	return(0);
-}
-
-/*********************************************************************
-		FUNCTION TO CHECK FOR WIN
-**********************************************************************/
-
-int winchk(int ply)
-{
-	int x,y;
-
-	if(ply==1)
-	{
-		x=11;
-		y=1;
-	}
-	else
-	{
-		x=22;
-		y=2;
-	}
-
-	if(pos[5][5]==x&&pos[4][4]==y&&pos[4][5]==y&&
-	   pos[5][4]==y&&pos[5][6]==y&&pos[6][4]==y&&pos[6][5]==y)
-		return(1);
-	else
-		return(0);
 }
 
 /*********************************************************************
@@ -1146,30 +1189,56 @@ int lstrw()
 }
 
 /*********************************************************************
+		FUNCTION TO CHECK FOR WIN
+**********************************************************************/
+
+int winchk(int ply)
+{
+	int x,y;
+
+	if(ply==1)
+	{
+		x=11;
+		y=1;
+	}
+	else
+	{
+		x=22;
+		y=2;
+	}
+
+	if(pos[5][5]==x&&pos[4][4]==y&&pos[4][5]==y&&
+	   pos[5][4]==y&&pos[5][6]==y&&pos[6][4]==y&&pos[6][5]==y)
+		return(1);
+	else
+		return(0);
+}
+
+/*********************************************************************
 			FUNCTION TO DISPLAY CREDITS
 *********************************************************************/
 
 void credits()
 {
 	cout<<"\n\n\t\t\t     \"THANKS FOR PLAYING\""<<endl
-	    <<"\n\n\t\t\t\t    \"AGON\""<<endl
-	    <<"\t\t\t\t  C++ Project"<<endl
-	    <<"\t\tDone by:-"<<endl
-	    <<"\t\t   (Lead Programer)"<<endl
-	    <<"\t\t\tA.Mukesh"<<endl
-	    <<"\t\t   (Programers)"<<endl
-	    <<"\t\t\tP.Pravin Kumar"<<endl
-	    <<"\t\t\tR.Madhumitha"<<endl
-	    <<"\t\t\tV.Prabha"<<endl
-	    <<"\n\n\tOur Sincere thanks to your Computer Teacher"<<endl
-	    <<"\t\t\t\"Mr.Kamal Kishore Sharma\""<<endl
-	    <<"\tfor being a spectacular support and guide"<<endl
-	    <<"\tthroughout the period of our project making."<<endl
-	    <<"\tHe has been motivating and inspiring us."<<endl
-	    <<"\tAlso, he has given great opportunities to explore"<<endl
-	    <<"\tand instill programming skills."<<endl
-	    <<"\tfor helping us in making this game a succesful one"<<endl
-	    <<"\t\t\t thank you sir"<<endl;
+	    <<"\n\t\t\t\t    \"AGON\"\n"<<endl
+	    <<"\t\t\t\ta C++ Project"<<endl
+	    <<"\t\t\tDone by:-"<<endl
+	    <<"\t\t\t   (Lead Programer)"<<endl
+	    <<"\t\t\t\tA.Mukesh"<<endl
+	    <<"\t\t\t   (Programers)"<<endl
+	    <<"\t\t\t\tP.Pravin Kumar"<<endl
+	    <<"\t\t\t\tR.Madhumitha"<<endl
+	    <<"\t\t\t\tV.Prabha"<<endl
+	    <<"\n\n\t\tOur Sincere thanks to your Computer Teacher"<<endl
+	    <<"\t\t\t   \"Mr.Kamal Kishore Sharma\""<<endl
+	    <<"\t\tfor being a spectacular support and guide"<<endl
+	    <<"\t\tthroughout the period of our project making."<<endl
+	    <<"\t\tHe has been motivating and inspiring us."<<endl
+	    <<"\t\tAlso, he has given great opportunities to explore"<<endl
+	    <<"\t\tand instill programming skills."<<endl
+	    <<"\t\tfor helping us in making this game a succesful one"<<endl
+	    <<"\t\t\t\t thank you sir"<<endl;
 }
 
 
