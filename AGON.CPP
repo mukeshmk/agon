@@ -2,24 +2,24 @@
 			HEADER FILES USED
 *********************************************************************/
 
+#include<fstream.h>
+#include<conio.h>
 #include<graphics.h>
 #include<stdlib.h>
 #include<time.h>
-#include<process.h>
-#include<iostream.h>
-#include<stdio.h>
-#include<conio.h>
 #include<dos.h>
+#include<process.h>
+#include<string.h>
 
 /*********************************************************************
 			FUNCTIONS USED
 *********************************************************************/
 
-void game();
 void rules();			//FUNCTION TO DISPLAY RULES OF THE GAME
 void dice();                    //FUNCTION FOR ROLLING THE DICE
 void hexagon(int,int);          //FUNCTION TO CHANGE THE COORDINATES
-void draw();                    //FUNCTION TO DRAW THE HEXAGON
+void draw();		        //FUNCTION TO DRAW THE HEXAGON
+void colour();			//FUNCTION TO CHOOSE COLOUR FOR COINS
 void position(int*,int*);       //FUNCTION TO PRINT THE POSITIONS
 int winchk(int);                //FUNCTION TO CHECK FOR WIN
 int capchk();                   //FUNCTION TO CHECK FOR CAPTURE
@@ -27,6 +27,10 @@ void modi(int);                 //FUNCTION FOR POSTION MODIFICATION
 int poschag(int);               //FUNCTION FOR POISTION CHANGING
 int moves();			//FUNCTION TO CHECK FOR CORRECT MOVES
 int lstrw();			//FUNCTION MOVE TO LAST ROW
+void test();			//FUNCTION TO CHECK FILE EXISTANCE
+int game_choose();              //FUNCTION TO CHOOSE THE GAME
+void file_save();               //FUNCTION TO SAVE THE GAME
+void file_read();		//FUNCTION TO READ THE SAVE FILE
 
 /*********************************************************************
 			GLOBAL VARIABLES
@@ -34,9 +38,9 @@ int lstrw();			//FUNCTION MOVE TO LAST ROW
 
 const int plyr[2]={1,2};
 char nm[2][30];
-int poly[14],rw1,cl1,rw2,cl2,ply=1;
-
-		//Red   Player:-1 Green Player:-2
+int poly[14],rw1,cl1,rw2,cl2,ply=1,count=0;
+int clr1=4,clr2=2,flag,cho;
+fstream file;
 int p1rw[7]={0,0,4,4,8,9,10},p1cl[7]={0,4,0,9,7,0,3};
 int p2rw[7]={0,1,2,6,6,10,10},p2cl[7]={2,6,0,0,9,1,5};
 
@@ -57,102 +61,147 @@ int pos[11][11]={
 	/* 9 */ {      1,0,0,0,0,0,0,	  -1,-1,-1,-1},
 	/* 10*/ {	0,2,0,1,0,22,	  -1,-1,-1,-1,-1}};
 
+/*********************************************************************
+			CLASS DECLRATION
+*********************************************************************/
 
-union REGS in,out;
+class save
+{
+	char nm[2][30];
+	int poly[14],count,ply;
+	int clr1,clr2;
+	int p1rw[7],p1cl[7];
+	int p2rw[7],p2cl[7];
+	int pos[11][11];
+   public:
+	save();
+	void copy_to();
+	void copy_4m();
+} s;
 
-int callmouse()
-{
-	in.x.ax=1;
-	int86(51,&in,&out);
-	return 1;
-}
-void mouseposi(int &xpos,int &ypos,int &click)
-{
-	in.x.ax=3;
-	int86(51,&in,&out);
-	click=out.x.bx;
-	xpos=out.x.cx;
-	ypos=out.x.dx;
-}
-int mousehide()
-{
-	in.x.ax=2;
-	int86(51,&in,&out);
-	return 1;
-}
-void setposi(int &xpos,int &ypos)
-{
-	in.x.ax=4;
-	in.x.cx=xpos;
-	in.x.dx=ypos;
-	int86(51,&in,&out);
-}
-void main()
-{
-	int x,y,cl,a,b;
-	clrscr();
+/*********************************************************************
+			CONSTRUCTOR OF CLASS
+*********************************************************************/
 
-	rules();			//calling of rules function
-	clrscr();
-	dice();         		//calling of dice function
+save::save()
+{
+	int i,j;
 
+	strcpy(nm[0],"Player 1");
+	strcpy(nm[1],"Player 2");
+	count=0;
+	ply=1;
+	clr1=4;
+	clr2=2;
+	for(i=0;i<7;i++)
+		p1rw[i]=p1cl[i]=p2rw[i]=p1cl[i]=0;
+	p1rw[2]=p1rw[3]=p1cl[1]=4;
+	p1rw[6]=p2rw[5]=p2rw[6]=10;
+	p1rw[5]=p1cl[3]=p2cl[4]=9;
+	p2rw[3]=p2rw[4]=p2cl[1]=6;
+	p2rw[2]=p2cl[0]=2;
+	p2rw[1]=p2cl[5]=1;
+	p1rw[4]=8;
+	p1cl[4]=7;
+	p1cl[6]=3;
+	p2cl[6]=5;
 
-	int g=DETECT,m;
-	initgraph(&g,&m,"c:\\turboc3\\bgi");
-	a=100;
-	b=400;
-	setposi(a,b);
-	callmouse();
-	int cx,cy,rx,ry;
-	cx=cy=10,rx=ry=5;
-	fillellipse(cx,cy,rx,ry);
-	mouseposi(x,y,cl);
-	if(cl==1)
-	{ cout<<"kamal";}
-	do
+	for(i=0;i<11;i++)
+		for(j=0;j<11;j++)
+			pos[i][j]=0;
+	pos[0][0]=11;
+	pos[10][5]=22;
+	pos[0][4]=pos[4][0]=pos[4][9]=pos[8][7]=pos[9][0]=pos[10][3]=1;
+	pos[0][2]=pos[1][6]=pos[2][0]=pos[6][0]=pos[6][9]=pos[10][1]=2;
+	for(i=0;i<5;i++)
+		for(j=6;j<11-i;j++)
+			pos[i][j]=-1;
+	for(i=10;i>=6;i--)
+		for(j=6;j<=i;j++)
+			pos[i][j]=-1;
+	}
+
+/*********************************************************************
+			CLASS FUNTION COPY_TO
+*********************************************************************/
+
+void save::copy_to()
+{
+	int i,j;
+
+	strcpy(nm[0],::nm[0]);
+	strcpy(nm[1],::nm[1]);
+	count=::count;
+	ply=::ply;
+	clr1=::clr1;
+	clr2=::clr2;
+	for(i=0;i<7;i++)
 	{
-		mouseposi(x,y,cl);
-		if(cl==1)
-		{
-			setfillstyle(1,0);
-			fillellipse(cx,cy,rx,ry);
-			cx=x,cy=y;
-			setfillstyle(1,15);
-			fillellipse(cx,cy,rx,ry);
-		}
-		gotoxy(10,9);
-		printf("\n\tMouse Position is: %d,%d",x,y);
-		printf("\n\tClick: %d",cl);
-
-		game();	//calling of the game
-
-		printf("\n\tPress any key to hide the mouse");
-	}while(!kbhit());
-	getch();
-	mousehide();
-	printf("\n\n\tPress any key to Exit");
-	getch();
+		poly[i]=::poly[i];
+		poly[i+7]=::poly[i+7];
+		p1rw[i]=::p1rw[i];
+		p1cl[i]=::p1cl[i];
+		p2rw[i]=::p2rw[i];
+		p2cl[i]=::p2cl[i];
+	}
+	for(i=0;i<11;i++)
+		for(j=0;j<11;j++)
+			pos[i][j]=::pos[i][j];
 }
 
 /*********************************************************************
-			MAIN1 FUNCTION
+			CLASS FUNTION COPY_4M
 *********************************************************************/
 
-void game()
+void save::copy_4m()
+{
+	int i,j;
+
+	strcpy(::nm[0],nm[0]);
+	strcpy(::nm[1],nm[1]);
+	::count=count;
+	::ply=ply;
+	::clr1=clr1;
+	::clr2=clr2;
+	for(i=0;i<7;i++)
+	{
+		::poly[i]=poly[i];
+		::poly[i+7]=poly[i+7];
+		::p1rw[i]=p1rw[i];
+		::p1cl[i]=p1cl[i];
+		::p2rw[i]=p2rw[i];
+		::p2cl[i]=p2cl[i];
+	}
+	for(i=0;i<11;i++)
+		for(j=0;j<11;j++)
+			::pos[i][j]=pos[i][j];
+}
+
+/*********************************************************************
+			MAIN FUNCTION
+*********************************************************************/
+
+void main()
 {
 	clrscr();
 
-	int count=0,chk,mov,cap,i,poschg;
+	int chk,mov,cap,i,poschg,gm_ch,count;
+	char sav;
+	count=::count;
 
-/*	rules();			//calling of rules function
+	gm_ch=game_choose();		//calling of game choose
+	if(gm_ch==1)
+		goto cont;
+	rules();			//calling of rules function
 	clrscr();
 	dice();         		//calling of dice function
+	colour();			//calling of colour function
 
-	//Graphics initialisation
+cont:	//Graphics initialisation
 	int gd=DETECT,gm;
 	initgraph(&gd,&gm,"c:\\turboc3\\bgi");
 
-*/	draw();			//calling of draw function
+	draw();			//calling of draw function
 	modi(1);		//calling of modi function
 
 
@@ -241,16 +290,19 @@ again:		cout<<"enter r and c to \"move to\""<<endl;
 			exit(0);
 		}
 
+		cout<<"do u want to save"<<endl;
+		cin>>sav;
+		if(sav=='y')
+			file_save();
 		cout<<"do u want to continue"<<endl;
 		cin>>ch;
-		if(ch!='y'||ch!='Y')
+		if(ch!='y'&&ch!='Y')
 		{
-			clrscr();
+			closegraph();
 			cout<<"\n\nthanks for playing"<<endl;
-			delay(800);
+			delay(2000);
 			exit(0);
 		}
-
 		count++;
 	 }while(ch=='y'||ch=='Y');
 
@@ -321,8 +373,7 @@ roll:	for(i=0;i<2;++i)
 	else
 		cout<<endl<<nm[1]<<" wins the \"first chance\""<<endl;
 
-	cout<<endl<<"You are the \"first Player\""<<endl
-	    <<"your conis are the \"red\" once"<<endl;
+	cout<<endl<<"You are the \"first Player\""<<endl;
 	getch();
 }
 
@@ -384,6 +435,159 @@ void hexagon (int x, int y)
 	poly[12]=x+10;
 	poly[13]=y;
 }
+
+/*********************************************************************
+		FUNCTION TO CHOOSE COLOUR FOR COINS
+*********************************************************************/
+void colour()
+{
+	int i=0;
+	char cho;
+	char ch[12][3]={"1","2","3","4","5","6","7"
+			,"8","9","10","11","12"};
+	clrscr();
+
+	cout<<"Do you want to choose colours for your coins"<<endl
+	    <<"by Default"<<endl
+	    <<"Player 1 gets \"RED\" coins"<<endl
+	    <<"Player 2 gets \"GREEN\" coins"<<endl
+	    <<"do you want to change ?? (y\\n)"<<endl;
+	cin>>cho;
+	if(cho=='y')
+	{
+		int gd=DETECT,gm;
+		initgraph(&gd,&gm,"c:\\turboc3\\bgi");
+
+		cout<<"\t\t Enter the colours you want for your coins"<<endl;
+		for(i=0;i<6;i++)
+		{
+			outtextxy(88+80*i,185,ch[i]);
+			outtextxy(88+80*i,285,ch[i+6]);
+		}
+		for(i=0;i<6;i++)
+		{
+			setcolor(i+1);
+			setfillstyle(1,i+1);
+			fillellipse(90+i*80,160,20,20);
+		}
+		for(i=8;i<14;i++)
+		{
+			setcolor(i+1);
+			setfillstyle(1,i+1);
+			fillellipse(90+(i-8)*80,260,20,20);
+		}
+enter:		gotoxy(1,5);
+		cout<<nm[0]<<"-choose the colour :";
+		cin>>clr1;
+		cout<<nm[1]<<"-choose the colour :";
+		cin>>clr2;
+
+		if((clr1==clr2)||(clr1>13||clr2>13))
+		{
+			gotoxy(1,5);
+			for(i=0;i<4;i++)
+				cout<<"\t\t\t\t\t\t\t\t"<<endl;
+			gotoxy(1,4);
+			cout<<"enter again as chooses are wrong or same"<<endl;
+			goto enter;
+		}
+		if(clr1>6)
+			clr1+=2;
+		if(clr2>6)
+			clr2+=2;
+
+		closegraph();
+	}
+}
+
+/*********************************************************************
+			FUNCTION TO SAVE THE GAME
+*********************************************************************/
+
+void file_save()
+{
+	count++;
+	s.copy_to();
+	count--;
+	file.open("save.dat",ios::out|ios::binary);
+	if(!file)
+	{
+		cout<<"file not opened";
+		flag=0;
+		getch();
+		return;
+	}
+	file.write((char*)&s,sizeof(s));
+	cout<<"save successful"<<endl;
+	file.close();
+	return;
+}
+
+/*********************************************************************
+			FUNCTION TO READ FROM SAVE FILE
+*********************************************************************/
+
+void file_read()
+{
+	file.open("save.dat",ios::in|ios::binary);
+	if(!file)
+	{
+		cout<<"file not opened";
+		flag=0;
+		getch();
+
+	}
+	file.read((char*)&s,sizeof(s));
+	s.copy_4m();
+	cout<<"data retreaved successfully"<<endl;
+	file.close();
+	return;
+}
+
+/*********************************************************************
+		FUNCTION TO TEST FOR FILE EXISTANCE
+*********************************************************************/
+
+void test()
+{
+	file.open("save.dat",ios::out|ios::noreplace|ios::binary);
+	if(file)
+		flag=10;
+	file.close();
+}
+
+/*********************************************************************
+			FUNCTION TO CHOOSE THE GAME
+*********************************************************************/
+
+int game_choose()
+{
+	cho=0;
+	test();
+//	if(flag==10)
+	{
+		cout<<"save data exist for the current game\n"
+		    <<"do you you want to \n"
+		    <<"1.Play the saved game  OR\n"
+		    <<"2.Play the new game\n"
+		    <<"enter ur choice:";
+		cin>>cho;
+	}
+	if(cho==1)
+	{
+		file_read();
+		return(1);
+	}
+	else
+	{
+		clrscr();
+		cout<<"\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t";
+		cout<<"NEW GAME STARTED";
+		return(0);
+	}
+}
+
+
 
 /*********************************************************************
 		FUNCTION TO CHECK FOR CORRECT MOVES
@@ -509,13 +713,13 @@ void modi(int z)
 		for(int k=0;k<7;++k)
 			if(plyr[j]==1)
 			{
-				setfillstyle(1,4);
+				setfillstyle(1,clr1);
 				prw[k]=p1rw[k];
 				pcl[k]=p1cl[k];
 			}
 			else
 			{
-				setfillstyle(1,2);
+				setfillstyle(1,clr2);
 				prw[k]=p2rw[k];
 				pcl[k]=p2cl[k];
 			}
@@ -625,9 +829,9 @@ agn:		lst=lstrw();
 //To make the new circle
 		setcolor(15);
 		if(ply==1)
-			setfillstyle(1,4);
+			setfillstyle(1,clr1);
 		else
-			setfillstyle(1,2);
+			setfillstyle(1,clr2);
 		if(rw2<=5)
 		{
 			X=x+10*(2*cl2+1)-10*rw2;
