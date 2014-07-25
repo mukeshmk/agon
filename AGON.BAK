@@ -1682,6 +1682,10 @@ void credits()
 	    <<"\t\t\tDone by:-"<<endl
 	    <<"\t\t\t   (Lead Programer)"<<endl
 	    <<"\t\t\t\tA.Mukesh"<<endl
+	    <<"\t\t\t   (Programers)"<<endl
+	    <<"\t\t\t\tP.Pravin Kumar"<<endl
+	    <<"\t\t\t\tR.Madhumitha"<<endl
+	    <<"\t\t\t\tV.Prabha"<<endl
 	    <<"\n\n\t\tOur Sincere thanks to your Computer Teacher"<<endl
 	    <<"\t\t\t   \"Mr.Kamal Kishore Sharma\""<<endl
 	    <<"\t\tfor being a spectacular support and guide"<<endl
